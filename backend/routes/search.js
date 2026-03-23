@@ -7,20 +7,23 @@ router.get("/:query", async (req, res) => {
   try {
     const query = req.params.query;
 
-    // 1. Fetch data from SerpAPI
-    const response = await axios.get("https://serpapi.com/search.json", {
-      params: {
-        engine: "google_shopping",
-        q: query,
-        api_key: process.env.SERP_API_KEY,
-      },
-    });
+    // 1. Fetch from API
+    const response = await axios.get(
+      "https://serpapi.com/search.json",
+      {
+        params: {
+          engine: "google_shopping",
+          q: query,
+          api_key: process.env.SERP_API_KEY,
+        },
+      }
+    );
 
     const results = response.data.shopping_results;
 
     if (!results) return res.json([]);
 
-    // 2. Check if product exists
+    // 2. Find or insert product
     let productResult = await pool.query(
       "SELECT * FROM products WHERE name = $1",
       [query]
@@ -38,18 +41,18 @@ router.get("/:query", async (req, res) => {
       product_id = productResult.rows[0].id;
     }
 
+    // 3. Process results
     const cleanedResults = [];
 
-    // 3. Loop through API results
     for (let item of results.slice(0, 5)) {
       if (!item.price || !item.source) continue;
 
-      // Extract numeric price
+      // extract number from price string
       const price = parseInt(item.price.replace(/[^\d]/g, ""));
 
       const platformName = item.source;
 
-      // 4. Check or insert platform
+      // find or insert platform
       let platformResult = await pool.query(
         "SELECT * FROM platforms WHERE name = $1",
         [platformName]
@@ -67,21 +70,20 @@ router.get("/:query", async (req, res) => {
         platform_id = platformResult.rows[0].id;
       }
 
-      // 5. Insert price history
+      // 4. Insert price history
       await pool.query(
         "INSERT INTO product_prices (product_id, platform_id, price) VALUES ($1, $2, $3)",
         [product_id, platform_id, price]
       );
 
-      // 6. Prepare response
       cleanedResults.push({
         title: item.title,
-        price: price,
+        price,
         platform: platformName,
       });
     }
 
-    // 7. Send response
+    // 5. Return cleaned data
     res.json(cleanedResults);
 
   } catch (error) {

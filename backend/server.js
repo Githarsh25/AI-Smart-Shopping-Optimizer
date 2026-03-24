@@ -9,6 +9,8 @@ const predictionRoutes = require("./routes/prediction");
 const dealRoutes = require("./routes/deals");
 const cartRoutes = require("./routes/cart");
 const alertRoutes = require("./routes/alerts");
+const priceByNameRoutes = require("./routes/pricesByName");
+const priceHistoryRoutes = require("./routes/priceHistory");
 const app = express();
 require("./cron/priceChecker");
 
@@ -22,6 +24,8 @@ app.use("/price-prediction", predictionRoutes);
 app.use("/deals", dealRoutes);
 app.use("/cart", cartRoutes);
 app.use("/alerts", alertRoutes);
+app.use("/prices-by-name", priceByNameRoutes);
+app.use("/price-history", priceHistoryRoutes);
 
 app.get("/", (req, res) => {
   res.send("Smart Shopping AI Backend Running");

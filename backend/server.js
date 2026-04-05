@@ -11,11 +11,15 @@ const cartRoutes = require("./routes/cart");
 const alertRoutes = require("./routes/alerts");
 const priceByNameRoutes = require("./routes/pricesByName");
 const priceHistoryRoutes = require("./routes/priceHistory");
+
 const app = express();
 require("./cron/priceChecker");
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || "http://localhost:5173"
+}));
 
-app.use(cors());
 app.use(express.json());
+
 app.use("/search", searchRoutes);
 app.use("/prices", priceRoutes);
 app.use("/products", productRoutes);
@@ -30,9 +34,10 @@ app.use("/price-history", priceHistoryRoutes);
 app.get("/", (req, res) => {
   res.send("Smart Shopping AI Backend Running");
 });
-
-console.log("searchRoutes:", searchRoutes);
-
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  res.status(500).json({ message: "Internal server error" });
+});
 
 const PORT = 5000;
 

@@ -1,7 +1,4 @@
-// 🔥 FULL UPDATED VERSION — UI REDESIGN by Claude
-
-import React, { useState } from "react";
-import { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Line } from "react-chartjs-2";
 import {
@@ -9,12 +6,16 @@ import {
   LineElement,
   CategoryScale,
   LinearScale,
-  PointElement
+  PointElement,
+  Tooltip,
+  Filler,
 } from "chart.js";
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement);
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Filler);
 
-// ─── INJECTED STYLES ──────────────────────────────────────────────────────────
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+// ─── STYLES ──────────────────────────────────────────────────────────────────
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
@@ -29,6 +30,7 @@ const styles = `
     --accent2:   #a78bfa;
     --green:     #34d399;
     --red:       #f87171;
+    --amber:     #fbbf24;
     --text:      #e8eaf0;
     --muted:     #5a5f72;
     --font-head: 'Syne', sans-serif;
@@ -37,12 +39,10 @@ const styles = `
 
   body { background: var(--bg); color: var(--text); font-family: var(--font-head); }
 
-  /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
 
-  /* ── ANIMATED BG GRID ── */
   .bg-grid {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background-image:
@@ -51,10 +51,7 @@ const styles = `
     background-size: 48px 48px;
   }
 
-  /* ── GLOW ORBS ── */
-  .orb {
-    position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0;
-  }
+  .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
   .orb-1 {
     width: 500px; height: 500px; top: -120px; left: -100px;
     background: radial-gradient(circle, rgba(79,138,255,0.12) 0%, transparent 70%);
@@ -68,22 +65,16 @@ const styles = `
   @keyframes driftA { from { transform: translate(0,0) scale(1); } to { transform: translate(60px, 40px) scale(1.1); } }
   @keyframes driftB { from { transform: translate(0,0) scale(1); } to { transform: translate(-50px, -30px) scale(1.08); } }
 
-  /* ── LAYOUT ── */
   .app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
-  /* ── NAVBAR ── */
   .navbar {
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 48px; height: 68px;
-    background: rgba(7,8,13,0.85);
-    backdrop-filter: blur(20px);
+    background: rgba(7,8,13,0.85); backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
     position: sticky; top: 0; z-index: 100;
   }
-  .logo {
-    font-size: 18px; font-weight: 800; letter-spacing: -0.5px;
-    display: flex; align-items: center; gap: 10px;
-  }
+  .logo { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
   .logo-icon {
     width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2));
     border-radius: 9px; display: flex; align-items: center; justify-content: center;
@@ -91,13 +82,11 @@ const styles = `
   }
   .logo-sub { font-size: 11px; font-weight: 400; color: var(--muted); font-family: var(--font-mono); letter-spacing: 1px; }
 
-  /* ── CART BUTTON ── */
   .cart-btn {
     position: relative; display: flex; align-items: center; gap: 8px;
     padding: 9px 20px; border-radius: 10px; border: 1px solid var(--border);
     background: var(--surface2); color: var(--text); font-family: var(--font-head);
-    font-size: 14px; font-weight: 600; cursor: pointer;
-    transition: all 0.2s ease;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
   }
   .cart-btn:hover { background: var(--surface); border-color: rgba(79,138,255,0.35); box-shadow: 0 0 16px rgba(79,138,255,0.15); }
   .cart-badge {
@@ -107,45 +96,26 @@ const styles = `
     font-family: var(--font-mono);
   }
 
-  /* ── HERO / SEARCH ── */
-  .hero {
-    display: flex; flex-direction: column; align-items: center;
-    padding: 64px 24px 16px;
-    gap: 8px;
-  }
+  .hero { display: flex; flex-direction: column; align-items: center; padding: 64px 24px 16px; gap: 8px; }
   .hero-tag {
     font-family: var(--font-mono); font-size: 11px; color: var(--accent);
     letter-spacing: 2px; text-transform: uppercase;
     padding: 4px 12px; border: 1px solid rgba(79,138,255,0.25);
     border-radius: 999px; background: rgba(79,138,255,0.06);
   }
-  .hero-title {
-    font-size: clamp(28px, 5vw, 52px); font-weight: 800; text-align: center;
-    letter-spacing: -1.5px; line-height: 1.1;
-  }
-  .hero-title span {
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
+  .hero-title { font-size: clamp(28px, 5vw, 52px); font-weight: 800; text-align: center; letter-spacing: -1.5px; line-height: 1.1; }
+  .hero-title span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .hero-sub { color: var(--muted); font-size: 15px; font-weight: 400; text-align: center; margin-top: 4px; }
 
-  /* ── SEARCH BAR ── */
   .search-wrap {
     width: 100%; max-width: 680px; margin: 28px auto 0;
     display: flex; align-items: center;
     background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 14px; overflow: hidden;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    border-radius: 14px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .search-wrap:focus-within {
-    border-color: rgba(79,138,255,0.4);
-    box-shadow: 0 0 0 3px rgba(79,138,255,0.08), 0 0 30px rgba(79,138,255,0.1);
-  }
+  .search-wrap:focus-within { border-color: rgba(79,138,255,0.4); box-shadow: 0 0 0 3px rgba(79,138,255,0.08), 0 0 30px rgba(79,138,255,0.1); }
   .search-icon { padding: 0 16px; color: var(--muted); font-size: 17px; flex-shrink: 0; }
-  .search-input {
-    flex: 1; padding: 16px 0; background: transparent; border: none; outline: none;
-    color: var(--text); font-family: var(--font-head); font-size: 15px;
-  }
+  .search-input { flex: 1; padding: 16px 0; background: transparent; border: none; outline: none; color: var(--text); font-family: var(--font-head); font-size: 15px; }
   .search-input::placeholder { color: var(--muted); }
   .search-btn {
     padding: 16px 28px; background: linear-gradient(135deg, var(--accent), #3a70e0);
@@ -155,17 +125,21 @@ const styles = `
   }
   .search-btn:hover { opacity: 0.9; box-shadow: 0 0 20px rgba(79,138,255,0.4); }
 
-  /* ── LOADING PULSE ── */
   .loading-bar {
     width: 100%; max-width: 680px; margin: 16px auto 0; height: 2px;
     background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
-    background-size: 300% 100%;
-    animation: shimmer 1.2s linear infinite;
-    border-radius: 2px;
+    background-size: 300% 100%; animation: shimmer 1.2s linear infinite; border-radius: 2px;
   }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-  /* ── SECTION LABEL ── */
+  /* CHANGE 2: Error message style */
+  .error-msg {
+    width: 100%; max-width: 680px; margin: 12px auto 0;
+    padding: 10px 16px; border-radius: 10px;
+    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.25);
+    color: var(--red); font-size: 14px; font-family: var(--font-mono); text-align: center;
+  }
+
   .section-label {
     font-family: var(--font-mono); font-size: 11px; color: var(--muted);
     letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px;
@@ -173,24 +147,14 @@ const styles = `
   }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* ── PRODUCTS GRID ── */
   .products-section { width: 100%; max-width: 1100px; margin: 52px auto 0; padding: 0 24px; }
   .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px; }
 
-  /* ── PRODUCT CARD ── */
   .product-card {
     position: relative; padding: 24px; border-radius: 16px;
     border: 1px solid var(--border); background: var(--surface);
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; overflow: hidden;
   }
-  .product-card::before {
-    content: ''; position: absolute; inset: 0; opacity: 0;
-    background: radial-gradient(600px circle at var(--mx,50%) var(--my,50%), rgba(79,138,255,0.06), transparent 50%);
-    transition: opacity 0.3s;
-    pointer-events: none;
-  }
-  .product-card:hover::before { opacity: 1; }
   .product-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(0,0,0,0.5); border-color: rgba(79,138,255,0.2); }
   .product-card.best-deal { border-color: rgba(52,211,153,0.35); background: rgba(52,211,153,0.04); }
   .product-card.best-deal:hover { box-shadow: 0 20px 48px rgba(52,211,153,0.12); }
@@ -201,48 +165,42 @@ const styles = `
     color: var(--green); font-family: var(--font-mono); font-size: 10px;
     padding: 3px 10px; border-radius: 999px; letter-spacing: 1px;
   }
-
-  .product-platform {
-    font-family: var(--font-mono); font-size: 11px; color: var(--muted);
-    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;
-  }
+  .product-platform { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
   .product-title { font-size: 15px; font-weight: 600; line-height: 1.4; color: var(--text); margin-bottom: 14px; }
-  .product-price {
-    font-size: 30px; font-weight: 800; letter-spacing: -1px;
-    font-family: var(--font-mono);
-    background: linear-gradient(90deg, #fff, rgba(255,255,255,0.7));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
+  .product-price { font-size: 30px; font-weight: 800; letter-spacing: -1px; font-family: var(--font-mono); background: linear-gradient(90deg, #fff, rgba(255,255,255,0.7)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .product-price-sym { font-size: 18px; font-weight: 400; }
+
+  /* CHANGE 6: Savings badge style */
+  .savings-badge { font-family: var(--font-mono); font-size: 12px; color: var(--green); margin-top: 6px; }
 
   .add-btn {
     margin-top: 20px; width: 100%; padding: 11px;
     border: 1px solid rgba(79,138,255,0.3); border-radius: 10px;
     background: rgba(79,138,255,0.08); color: var(--accent);
     font-family: var(--font-head); font-weight: 600; font-size: 13px;
-    cursor: pointer; letter-spacing: 0.4px;
-    transition: all 0.2s ease;
+    cursor: pointer; letter-spacing: 0.4px; transition: all 0.2s ease;
   }
   .add-btn:hover { background: rgba(79,138,255,0.18); box-shadow: 0 0 16px rgba(79,138,255,0.2); }
 
-  /* ── PRICE COMPARISON ── */
+  /* CHANGE 7: Buy Now link style */
+  .buy-link {
+    display: block; margin-top: 8px; text-align: center;
+    font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+    text-decoration: none; letter-spacing: 0.5px;
+    transition: color 0.2s;
+  }
+  .buy-link:hover { color: var(--accent); }
+
   .compare-section { width: 100%; max-width: 1100px; margin: 52px auto 0; padding: 0 24px; }
   .compare-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
-  .compare-card {
-    padding: 16px 20px; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; font-family: var(--font-mono);
-  }
+  .compare-card { padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; font-family: var(--font-mono); }
   .compare-platform { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
   .compare-price { font-size: 20px; font-weight: 500; color: var(--text); }
 
-  /* ── AI + GRAPH ROW ── */
   .ai-row { width: 100%; max-width: 1100px; margin: 52px auto 0; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   @media (max-width: 768px) { .ai-row { grid-template-columns: 1fr; } }
 
-  .ai-card {
-    padding: 28px; border-radius: 16px; border: 1px solid rgba(79,138,255,0.2);
-    background: linear-gradient(135deg, rgba(79,138,255,0.06), rgba(167,139,250,0.04));
-  }
+  .ai-card { padding: 28px; border-radius: 16px; border: 1px solid rgba(79,138,255,0.2); background: linear-gradient(135deg, rgba(79,138,255,0.06), rgba(167,139,250,0.04)); }
   .ai-card-title { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
   .ai-metric { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
   .ai-metric:last-of-type { border-bottom: none; }
@@ -251,63 +209,79 @@ const styles = `
   .ai-metric-value.up { color: var(--green); }
   .ai-metric-value.down { color: var(--red); }
 
-  .graph-card {
-    padding: 28px; border-radius: 16px; border: 1px solid var(--border);
-    background: var(--surface);
+  /* CHANGE 9: Prediction reason + confidence styles */
+  .prediction-reason { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); line-height: 1.5; }
+  .confidence-badge {
+    display: inline-block; font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 1px; padding: 3px 10px; border-radius: 999px; margin-top: 10px;
   }
+  .confidence-high   { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: var(--green); }
+  .confidence-medium { background: rgba(251,191,36,0.12);  border: 1px solid rgba(251,191,36,0.3);  color: var(--amber); }
+  .confidence-low    { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); color: var(--red); }
+
+  /* CHANGE 8: Alert form styles */
+  .alert-form {
+    margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; align-items: center;
+  }
+  .alert-input {
+    flex: 1; padding: 9px 12px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: var(--font-mono); font-size: 13px; outline: none;
+  }
+  .alert-input:focus { border-color: rgba(79,138,255,0.4); }
+  .alert-btn {
+    padding: 9px 16px; border-radius: 8px; border: 1px solid rgba(167,139,250,0.35);
+    background: rgba(167,139,250,0.1); color: var(--accent2);
+    font-family: var(--font-head); font-size: 12px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  }
+  .alert-btn:hover { background: rgba(167,139,250,0.2); }
+  .alert-success { font-family: var(--font-mono); font-size: 12px; color: var(--green); margin-top: 8px; }
+
+  .graph-card { padding: 28px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); }
   .graph-card-title { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
 
-  /* ── TREND BUTTON ── */
   .trend-wrap { text-align: center; margin: 32px 0 0; }
   .trend-btn {
-    padding: 12px 32px; border-radius: 10px;
-    border: 1px solid rgba(167,139,250,0.35);
+    padding: 12px 32px; border-radius: 10px; border: 1px solid rgba(167,139,250,0.35);
     background: rgba(167,139,250,0.08); color: var(--accent2);
     font-family: var(--font-head); font-weight: 700; font-size: 14px;
-    cursor: pointer; letter-spacing: 0.5px;
-    transition: all 0.2s;
+    cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
   }
   .trend-btn:hover { background: rgba(167,139,250,0.16); box-shadow: 0 0 20px rgba(167,139,250,0.2); }
 
-  /* ── CART SIDEBAR ── */
   .cart-sidebar {
     position: fixed; top: 0; right: 0; height: 100%;
-    width: 340px; background: var(--surface);
-    border-left: 1px solid var(--border);
-    z-index: 200; display: flex; flex-direction: column;
-    box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+    width: 340px; background: var(--surface); border-left: 1px solid var(--border);
+    z-index: 200; display: flex; flex-direction: column; box-shadow: -20px 0 60px rgba(0,0,0,0.5);
   }
-  .cart-header {
-    padding: 24px; border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-  }
+  .cart-header { padding: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
   .cart-title { font-size: 16px; font-weight: 700; }
-  .cart-close {
-    width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
-    background: transparent; color: var(--muted); font-size: 16px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
-  }
+  .cart-close { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
   .cart-close:hover { background: var(--surface2); color: var(--text); }
   .cart-body { flex: 1; overflow-y: auto; padding: 16px 24px; }
   .cart-empty { color: var(--muted); font-family: var(--font-mono); font-size: 13px; margin-top: 20px; }
-  .cart-item {
-    padding: 14px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--surface2); margin-bottom: 10px;
-  }
+  .cart-item { padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface2); margin-bottom: 10px; }
   .cart-item-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
   .cart-item-price { font-family: var(--font-mono); font-size: 15px; color: var(--accent); }
   .cart-remove { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; margin-top: 6px; font-family: var(--font-mono); transition: color 0.2s; }
   .cart-remove:hover { color: var(--red); }
-  .cart-footer {
-    padding: 20px 24px; border-top: 1px solid var(--border);
-  }
-  .cart-total {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 16px;
-  }
+  .cart-footer { padding: 20px 24px; border-top: 1px solid var(--border); }
+  .cart-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .cart-total-label { font-size: 13px; color: var(--muted); font-family: var(--font-mono); }
   .cart-total-value { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: var(--text); }
+
+  /* CHANGE 5: Optimized cart result styles */
+  .optimize-btn {
+    width: 100%; padding: 11px; border-radius: 10px; margin-bottom: 10px;
+    border: 1px solid rgba(52,211,153,0.35); background: rgba(52,211,153,0.08);
+    color: var(--green); font-family: var(--font-head); font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .optimize-btn:hover { background: rgba(52,211,153,0.16); }
+  .optimized-total { font-family: var(--font-mono); font-size: 13px; color: var(--green); margin-bottom: 10px; }
+
   .checkout-btn {
     width: 100%; padding: 14px; border-radius: 10px; border: none;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -316,19 +290,17 @@ const styles = `
   }
   .checkout-btn:hover { opacity: 0.9; box-shadow: 0 0 24px rgba(79,138,255,0.4); }
 
-  /* ── FOOTER ── */
-  .footer {
-    margin-top: 80px; padding: 28px; text-align: center;
-    border-top: 1px solid var(--border);
-  }
+  .footer { margin-top: 80px; padding: 28px; text-align: center; border-top: 1px solid var(--border); }
   .footer-name { font-weight: 700; font-size: 14px; }
   .footer-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 1px; }
 `;
 
-// ─── CHART OPTIONS ─────────────────────────────────────────────────────────────
 const chartOptions = {
   responsive: true,
-  plugins: { legend: { display: false } },
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: true },
+  },
   scales: {
     x: {
       grid: { color: "rgba(255,255,255,0.04)" },
@@ -341,22 +313,34 @@ const chartOptions = {
   }
 };
 
-// ─── APP ───────────────────────────────────────────────────────────────────────
 function App() {
-  const [query, setQuery] = useState("");
-  const [products, setProducts] = useState([]);
-  const [prices, setPrices] = useState([]);
+  const [query, setQuery]         = useState("");
+  const [products, setProducts]   = useState([]);
+  const [prices, setPrices]       = useState([]);
   const [prediction, setPrediction] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const [cart, setCart] = useState([]);
-  const [showCart, setShowCart] = useState(false);
+  const [history, setHistory]     = useState([]);
+  const [loading, setLoading]     = useState(false);
+  const [cart, setCart]           = useState([]);
+  const [showCart, setShowCart]   = useState(false);
   const [showGraph, setShowGraph] = useState(false);
-  const cartRef = useRef();
 
+  // CHANGE 2: Added error state
+  // Before: errors only went to console.error — user saw nothing
+  const [error, setError] = useState(null);
+
+  // CHANGE 5: States for cart optimization
+  const [optimizedCart, setOptimizedCart]   = useState(null);
+  const [optimizedTotal, setOptimizedTotal] = useState(null);
+  const [optimizing, setOptimizing]         = useState(false);
+
+  // CHANGE 8: States for price alert form
+  const [alertPrice, setAlertPrice]     = useState("");
+  const [alertSuccess, setAlertSuccess] = useState(false);
+
+  const cartRef = useRef();
   const totalPrice = cart.reduce((sum, item) => sum + Number(item.price), 0);
 
+  // Click-outside handler for cart (this was already correct in your code)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (cartRef.current && !cartRef.current.contains(event.target)) {
@@ -373,38 +357,81 @@ function App() {
     const updated = [...cart];
     updated.splice(index, 1);
     setCart(updated);
+    // Reset optimization when cart changes
+    setOptimizedCart(null);
+    setOptimizedTotal(null);
   };
 
   const searchProduct = async () => {
+    if (!query.trim()) return;
+
     try {
       setLoading(true);
+      setError(null); // CHANGE 2: Clear previous error on new search
       setProducts([]);
       setPrices([]);
       setPrediction(null);
       setHistory([]);
       setShowGraph(false);
+      setAlertSuccess(false);
 
-      const res = await axios.get(`http://localhost:5000/search/${encodeURIComponent(query)}`);
+      // CHANGE 1: Using API constant instead of hardcoded localhost
+      const res = await axios.get(`${API}/search/${encodeURIComponent(query)}`);
       setProducts(res.data);
 
-      const priceRes = await axios.get(`http://localhost:5000/prices-by-name/${encodeURIComponent(query)}`);
+      const priceRes = await axios.get(`${API}/prices-by-name/${encodeURIComponent(query)}`);
       setPrices(priceRes.data);
 
-      const productRes = await axios.get("http://localhost:5000/products");
-      const product = productRes.data.find(p => p.name.toLowerCase().includes(query.toLowerCase()));
+      const productRes = await axios.get(`${API}/products`);
+      const product = productRes.data.find(
+        p => p.name.toLowerCase().includes(query.toLowerCase())
+      );
 
       if (product) {
-        const predRes = await axios.get(`http://localhost:5000/price-prediction/${product.id}`);
+        const predRes = await axios.get(`${API}/price-prediction/${product.id}`);
         setPrediction(predRes.data);
 
-        const historyRes = await axios.get(`http://localhost:5000/price-history/${product.id}`);
+        const historyRes = await axios.get(`${API}/price-history/${product.id}`);
         setHistory(historyRes.data);
       }
 
       setLoading(false);
     } catch (err) {
       console.error(err);
+      // CHANGE 2: Show error message to user
+      setError("Could not fetch prices. Check your internet or try again.");
       setLoading(false);
+    }
+  };
+
+  const optimizeCart = async () => {
+    if (cart.length === 0) return;
+    try {
+      setOptimizing(true);
+      const res = await axios.post(`${API}/cart/optimize`, {
+        products: cart.map(item => item.title)
+      });
+      setOptimizedCart(res.data.cart);
+      setOptimizedTotal(res.data.total_cost);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setOptimizing(false);
+    }
+  };
+
+  const setAlert = async () => {
+    if (!alertPrice || isNaN(alertPrice)) return;
+    try {
+      await axios.post(`${API}/alerts`, {
+        user_id: 1, // replace with real logged-in user ID when auth is added
+        product_name: query,
+        target_price: Number(alertPrice),
+      });
+      setAlertSuccess(true);
+      setAlertPrice("");
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -422,22 +449,25 @@ function App() {
     }]
   };
 
+  // CHANGE 6: Calculate savings vs highest price for best-deal card
   const minPrice = products.length ? Math.min(...products.map(x => x.price)) : null;
+  const maxPrice = products.length ? Math.max(...products.map(x => x.price)) : null;
+  const savings  = (minPrice && maxPrice && maxPrice !== minPrice) ? maxPrice - minPrice : 0;
+
   const priceDir = prediction
-    ? prediction.predicted_price >= prediction.current_price ? "up" : "down"
+    ? (prediction.predicted_price >= prediction.current_price ? "up" : "down")
     : null;
 
   return (
     <>
       <style>{styles}</style>
-
       <div className="bg-grid" />
       <div className="orb orb-1" />
       <div className="orb orb-2" />
 
       <div className="app">
 
-        {/* ── NAVBAR ── */}
+        {/* NAVBAR */}
         <nav className="navbar">
           <div className="logo">
             <div className="logo-icon">🛒</div>
@@ -446,14 +476,13 @@ function App() {
               <div className="logo-sub">AI POWERED</div>
             </div>
           </div>
-
           <button className="cart-btn" onClick={() => setShowCart(!showCart)}>
             🛒 Cart
             {cart.length > 0 && <span className="cart-badge">{cart.length}</span>}
           </button>
         </nav>
 
-        {/* ── HERO ── */}
+        {/* HERO */}
         <div className="hero">
           <div className="hero-tag">price intelligence engine</div>
           <h1 className="hero-title">
@@ -474,9 +503,12 @@ function App() {
           </div>
 
           {loading && <div className="loading-bar" />}
+
+          {/* CHANGE 2: Show error message below search bar */}
+          {error && <div className="error-msg">⚠ {error}</div>}
         </div>
 
-        {/* ── PRODUCTS ── */}
+        {/* PRODUCTS */}
         {products.length > 0 && (
           <div className="products-section">
             <div className="section-label">Results · {products.length} found</div>
@@ -487,16 +519,34 @@ function App() {
                   <div className="product-platform">{p.platform}</div>
                   <div className="product-title">{p.title}</div>
                   <div className="product-price">
-                    <span className="product-price-sym">₹</span>{Number(p.price).toLocaleString("en-IN")}
+                    {p.price_display
+                      ? p.price_display
+                      : <><span className="product-price-sym">₹</span>{Number(p.price).toLocaleString("en-IN")}</>
+                    }
                   </div>
+
+                  {/* CHANGE 6: Show savings amount on best deal card */}
+                  {p.price === minPrice && savings > 0 && (
+                    <div className="savings-badge">
+                      ✓ Save ₹{savings.toLocaleString("en-IN")} vs highest price
+                    </div>
+                  )}
+
                   <button className="add-btn" onClick={() => addToCart(p)}>+ Add to Cart</button>
+
+                  {/* CHANGE 7: Show "Buy Now" link if URL is available from SerpAPI */}
+                  {p.url && (
+                    <a className="buy-link" href={p.url} target="_blank" rel="noopener noreferrer">
+                      View on {p.platform} ↗
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* ── PRICE COMPARISON ── */}
+        {/* PRICE COMPARISON */}
         {prices.length > 0 && (
           <div className="compare-section">
             <div className="section-label">Price Comparison</div>
@@ -511,25 +561,62 @@ function App() {
           </div>
         )}
 
-        {/* ── AI PREDICTION + GRAPH ── */}
+        {/* AI PREDICTION + GRAPH */}
         {(prediction || showGraph) && (
           <div className="ai-row">
-            {prediction && (
+            {prediction && !prediction.message && (
               <div className="ai-card">
                 <div className="ai-card-title">🤖 AI Price Prediction</div>
+
                 <div className="ai-metric">
                   <span className="ai-metric-label">Current Price</span>
-                  <span className="ai-metric-value">₹{Number(prediction.current_price).toLocaleString("en-IN")}</span>
+                  <span className="ai-metric-value">
+                    ₹{Number(prediction.current_price).toLocaleString("en-IN")}
+                  </span>
                 </div>
+
                 <div className="ai-metric">
                   <span className="ai-metric-label">Predicted Next</span>
-                  <span className={`ai-metric-value ${priceDir}`}>
+                  <span className={`ai-metric-value ${priceDir === "up" ? "up" : "down"}`}>
                     ₹{Number(prediction.predicted_price).toLocaleString("en-IN")}
                     {priceDir === "up" ? " ↑" : " ↓"}
                   </span>
                 </div>
+
+                <div className="ai-metric">
+                  <span className="ai-metric-label">Recommendation</span>
+                  <span className={`ai-metric-value ${prediction.recommendation === "Buy Now" ? "up" : "down"}`}>
+                    {prediction.recommendation}
+                  </span>
+                </div>
+
+                {/* CHANGE 9: Show prediction reason and confidence badge */}
+                {prediction.reason && (
+                  <div className="prediction-reason">{prediction.reason}</div>
+                )}
+                {prediction.confidence && (
+                  <span className={`confidence-badge confidence-${prediction.confidence}`}>
+                    {prediction.confidence.toUpperCase()} CONFIDENCE
+                  </span>
+                )}
+
+                {/* CHANGE 8: Price alert form below prediction card */}
+                <div className="alert-form">
+                  <input
+                    className="alert-input"
+                    type="number"
+                    placeholder="Alert me at ₹..."
+                    value={alertPrice}
+                    onChange={(e) => setAlertPrice(e.target.value)}
+                  />
+                  <button className="alert-btn" onClick={setAlert}>🔔 Notify Me</button>
+                </div>
+                {alertSuccess && (
+                  <div className="alert-success">✓ Alert set! We'll notify you when price drops.</div>
+                )}
               </div>
             )}
+
             {showGraph && (
               <div className="graph-card">
                 <div className="graph-card-title">📈 Price History</div>
@@ -539,7 +626,7 @@ function App() {
           </div>
         )}
 
-        {/* ── TREND BUTTON ── */}
+        {/* TREND BUTTON */}
         {history.length > 0 && (
           <div className="trend-wrap">
             <button className="trend-btn" onClick={() => setShowGraph(!showGraph)}>
@@ -548,7 +635,7 @@ function App() {
           </div>
         )}
 
-        {/* ── CART SIDEBAR ── */}
+        {/* CART SIDEBAR */}
         {showCart && (
           <div className="cart-sidebar" ref={cartRef}>
             <div className="cart-header">
@@ -576,13 +663,30 @@ function App() {
                   <span className="cart-total-label">Total</span>
                   <span className="cart-total-value">₹{totalPrice.toLocaleString("en-IN")}</span>
                 </div>
+
+                {/* CHANGE 5: Optimize Cart button — was missing entirely before */}
+                {optimizedTotal && (
+                  <div className="optimized-total">
+                    ✓ Optimized: ₹{Number(optimizedTotal).toLocaleString("en-IN")}
+                    {" "}(Save ₹{(totalPrice - optimizedTotal).toLocaleString("en-IN")})
+                  </div>
+                )}
+
+                <button
+                  className="optimize-btn"
+                  onClick={optimizeCart}
+                  disabled={optimizing}
+                >
+                  {optimizing ? "Optimizing..." : "⚡ Optimize Cart"}
+                </button>
+
                 <button className="checkout-btn">Proceed to Checkout →</button>
               </div>
             )}
           </div>
         )}
 
-        {/* ── FOOTER ── */}
+        {/* FOOTER */}
         <footer className="footer">
           <div className="footer-name">Harsh Rana 🚀</div>
           <div className="footer-sub">AI SMART SHOPPING PLATFORM</div>

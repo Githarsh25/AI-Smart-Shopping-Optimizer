@@ -40,7 +40,7 @@ router.get("/:query", async (req, res, next) => {
     );
     const product_id = productResult.rows[0].id;
 
-    // 3. Process results
+
     const cleanedResults = [];
 
     for (let item of results.slice(0, 5)) {
@@ -76,8 +76,8 @@ router.get("/:query", async (req, res, next) => {
 
       cleanedResults.push({
         title:         item.title,
-        price,                                                    // clean INR number
-        price_display: item.price || `₹${price.toLocaleString("en-IN")}`, // formatted string e.g. "₹72,990"
+        price,                                                    
+        price_display: item.price || `₹${price.toLocaleString("en-IN")}`, 
         platform:      platformName,
         url:           item.link || null,
         thumbnail:     item.thumbnail || null,

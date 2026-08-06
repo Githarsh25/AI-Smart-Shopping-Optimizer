@@ -1,46 +1,55 @@
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
-const searchRoutes = require("./routes/search");
-const priceRoutes = require("./routes/prices");
-const productRoutes = require("./routes/products");
-const bestPriceRoutes = require("./routes/bestprice");
-const predictionRoutes = require("./routes/prediction");
-const dealRoutes = require("./routes/deals");
-const cartRoutes = require("./routes/cart");
-const alertRoutes = require("./routes/alerts");
-const priceByNameRoutes = require("./routes/pricesByName");
+const cors    = require("cors");
+
+const searchRoutes       = require("./routes/search");
+const priceRoutes        = require("./routes/prices");
+const productRoutes      = require("./routes/products");
+const bestPriceRoutes    = require("./routes/bestprice");
+const predictionRoutes   = require("./routes/prediction");
+const dealRoutes         = require("./routes/deals");
+const cartRoutes         = require("./routes/cart");
+const alertRoutes        = require("./routes/alerts");
+const priceByNameRoutes  = require("./routes/pricesByName");
 const priceHistoryRoutes = require("./routes/priceHistory");
+
+const aiAdvisorRoutes   = require("./routes/aiAdvisor");    // LLM shopping advisor
+const aiChatRoutes      = require("./routes/aiChat");        // RAG pipeline chat
+const aiCartAgentRoutes = require("./routes/aiCartAgent");   // Multi-agent cart optimizer
 
 const app = express();
 require("./cron/priceChecker");
+
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || "http://localhost:5173"
 }));
-
 app.use(express.json());
 
-app.use("/search", searchRoutes);
-app.use("/prices", priceRoutes);
-app.use("/products", productRoutes);
-app.use("/best-price", bestPriceRoutes);
+app.use("/search",         searchRoutes);
+app.use("/prices",         priceRoutes);
+app.use("/products",       productRoutes);
+app.use("/best-price",     bestPriceRoutes);
 app.use("/price-prediction", predictionRoutes);
-app.use("/deals", dealRoutes);
-app.use("/cart", cartRoutes);
-app.use("/alerts", alertRoutes);
+app.use("/deals",          dealRoutes);
+app.use("/cart",           cartRoutes);
+app.use("/alerts",         alertRoutes);
 app.use("/prices-by-name", priceByNameRoutes);
-app.use("/price-history", priceHistoryRoutes);
+app.use("/price-history",  priceHistoryRoutes);
+
+app.use("/ai/advisor",    aiAdvisorRoutes);    // POST /ai/advisor
+app.use("/ai/chat",       aiChatRoutes);        // POST /ai/chat
+app.use("/ai/cart-agent", aiCartAgentRoutes);   // POST /ai/cart-agent
 
 app.get("/", (req, res) => {
   res.send("Smart Shopping AI Backend Running");
 });
+
 app.use((err, req, res, next) => {
   console.error(err.message);
   res.status(500).json({ message: "Internal server error" });
 });
 
 const PORT = 5000;
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

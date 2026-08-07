@@ -18,7 +18,11 @@ const aiChatRoutes      = require("./routes/aiChat");        // RAG pipeline cha
 const aiCartAgentRoutes = require("./routes/aiCartAgent");   // Multi-agent cart optimizer
 
 const app = express();
-require("./cron/priceChecker");
+
+// Cron jobs only run in traditional server mode, not on Vercel serverless
+if (!process.env.VERCEL) {
+  require("./cron/priceChecker");
+}
 
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || "http://localhost:5173"
@@ -49,7 +53,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal server error" });
 });
 
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Only start listener locally — Vercel handles this automatically
+const PORT = process.env.PORT || 5000;
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;

@@ -5,7 +5,7 @@ const cors    = require("cors");
 const searchRoutes       = require("./routes/search");
 const priceRoutes        = require("./routes/prices");
 const productRoutes      = require("./routes/products");
-const bestPriceRoutes    = require("./routes/bestprice");
+const bestPriceRoutes    = require("./routes/bestPrice");
 const predictionRoutes   = require("./routes/prediction");
 const dealRoutes         = require("./routes/deals");
 const cartRoutes         = require("./routes/cart");
@@ -61,4 +61,4 @@ if (!process.env.VERCEL) {
   });
 }
 
-module.exports = app;
+module.exports = app;

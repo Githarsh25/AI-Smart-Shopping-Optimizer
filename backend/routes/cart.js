@@ -11,34 +11,40 @@ router.post("/optimize", async (req, res, next) => {
     }
 
 
-    const productNames = products.map(n => n.toLowerCase());
+const productNames = products.map(n =>
+  n.toLowerCase().split(" ").slice(0, 3).join(" ")
+);
 
-    const result = await pool.query(`
-      SELECT product_name, platform, price
-      FROM (
-        SELECT
-          pr.name AS product_name,
-          pl.name AS platform,
-          pp.price,
-          ROW_NUMBER() OVER (
-            PARTITION BY pr.id
-            ORDER BY pp.price ASC
-          ) AS rn
-        FROM (
-          SELECT DISTINCT ON (pp2.product_id, pp2.platform_id)
-            pp2.product_id,
-            pp2.platform_id,
-            pp2.price
-          FROM product_prices pp2
-          JOIN products pr2 ON pp2.product_id = pr2.id
-          WHERE LOWER(pr2.name) = ANY($1::text[])
-          ORDER BY pp2.product_id, pp2.platform_id, pp2.recorded_at DESC
-        ) pp
-        JOIN products pr ON pp.product_id = pr.id
-        JOIN platforms pl ON pp.platform_id = pl.id
-      ) ranked
-      WHERE rn = 1
-    `, [productNames]);
+const conditions = productNames
+  .map((_, i) => `LOWER(pr2.name) LIKE $${i + 1}`)
+  .join(" OR ");
+
+const result = await pool.query(`
+  SELECT product_name, platform, price
+  FROM (
+    SELECT
+      pr.name AS product_name,
+      pl.name AS platform,
+      pp.price,
+      ROW_NUMBER() OVER (
+        PARTITION BY pr.id
+        ORDER BY pp.price ASC
+      ) AS rn
+    FROM (
+      SELECT DISTINCT ON (pp2.product_id, pp2.platform_id)
+        pp2.product_id,
+        pp2.platform_id,
+        pp2.price
+      FROM product_prices pp2
+      JOIN products pr2 ON pp2.product_id = pr2.id
+      WHERE ${conditions}
+      ORDER BY pp2.product_id, pp2.platform_id, pp2.recorded_at DESC
+    ) pp
+    JOIN products pr ON pp.product_id = pr.id
+    JOIN platforms pl ON pp.platform_id = pl.id
+  ) ranked
+  WHERE rn = 1
+`, productNames.map(k => `%${k}%`));
 
     const cart = result.rows.map(row => ({
       product:  row.product_name,

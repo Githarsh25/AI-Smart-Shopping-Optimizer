@@ -36,8 +36,8 @@ router.post("/", async (req, res, next) => {
       return res.status(400).json({ message: "products must be a non-empty array" });
     }
 
-    const productNames = products.map(p => p.toLowerCase());
-    const conditions   = productNames.map((_, i) => `LOWER(pr.name) LIKE $${i + 1}`).join(" OR ");
+    const productNames = products.map(p => p.toLowerCase().split(" ").slice(0, 3).join(" "));
+    const conditions = productNames.map((_, i) => `LOWER(pr.name) LIKE $${i + 1}`).join(" OR ");
 
     const priceData = await pool.query(`
       SELECT

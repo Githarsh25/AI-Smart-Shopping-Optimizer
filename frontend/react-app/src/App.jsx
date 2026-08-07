@@ -2,11 +2,23 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Line } from "react-chartjs-2";
 import {
-  Chart as ChartJS, LineElement, CategoryScale,
-  LinearScale, PointElement, Tooltip, Filler,
+  Chart as ChartJS,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Filler,
 } from "chart.js";
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Filler);
+ChartJS.register(
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Filler,
+);
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -269,43 +281,55 @@ const chartOptions = {
   responsive: true,
   plugins: { legend: { display: false }, tooltip: { enabled: true } },
   scales: {
-    x: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#5a5f72", font: { family: "'DM Mono', monospace", size: 10 } } },
-    y: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#5a5f72", font: { family: "'DM Mono', monospace", size: 10 } } },
+    x: {
+      grid: { color: "rgba(255,255,255,0.04)" },
+      ticks: {
+        color: "#5a5f72",
+        font: { family: "'DM Mono', monospace", size: 10 },
+      },
+    },
+    y: {
+      grid: { color: "rgba(255,255,255,0.04)" },
+      ticks: {
+        color: "#5a5f72",
+        font: { family: "'DM Mono', monospace", size: 10 },
+      },
+    },
   },
 };
 
 function App() {
-  const [query, setQuery]             = useState("");
-  const [products, setProducts]       = useState([]);
-  const [prices, setPrices]           = useState([]);
-  const [prediction, setPrediction]   = useState(null);
-  const [history, setHistory]         = useState([]);
-  const [loading, setLoading]         = useState(false);
-  const [cart, setCart]               = useState([]);
-  const [showCart, setShowCart]       = useState(false);
-  const [showGraph, setShowGraph]     = useState(false);
-  const [error, setError]             = useState(null);
-  const [optimizedCart, setOptimizedCart]   = useState(null);
+  const [query, setQuery] = useState("");
+  const [products, setProducts] = useState([]);
+  const [prices, setPrices] = useState([]);
+  const [prediction, setPrediction] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [cart, setCart] = useState([]);
+  const [showCart, setShowCart] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
+  const [error, setError] = useState(null);
+  const [optimizedCart, setOptimizedCart] = useState(null);
   const [optimizedTotal, setOptimizedTotal] = useState(null);
-  const [optimizing, setOptimizing]         = useState(false);
-  const [alertPrice, setAlertPrice]   = useState("");
+  const [optimizing, setOptimizing] = useState(false);
+  const [alertPrice, setAlertPrice] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
 
-  const [advisor, setAdvisor]         = useState(null);   // LLM advisor result
+  const [advisor, setAdvisor] = useState(null); // LLM advisor result
   const [advisorLoading, setAdvisorLoading] = useState(false);
 
-  const [showChat, setShowChat]       = useState(false);
-  const [chatMessages, setChatMessages] = useState([]);   // conversation history
-  const [chatInput, setChatInput]     = useState("");
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]); // conversation history
+  const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef(null);
 
-  const [agentStrategy, setAgentStrategy]   = useState(null);
-  const [agentSavings, setAgentSavings]     = useState(null);
-  const [agentPipeline, setAgentPipeline]   = useState(null);
-  const [agentLoading, setAgentLoading]     = useState(false);
+  const [agentStrategy, setAgentStrategy] = useState(null);
+  const [agentSavings, setAgentSavings] = useState(null);
+  const [agentPipeline, setAgentPipeline] = useState(null);
+  const [agentLoading, setAgentLoading] = useState(false);
 
-  const cartRef    = useRef();
+  const cartRef = useRef();
   const totalPrice = cart.reduce((sum, item) => sum + Number(item.price), 0);
 
   useEffect(() => {
@@ -314,13 +338,14 @@ function App() {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (cartRef.current && !cartRef.current.contains(e.target)) setShowCart(false);
+      if (cartRef.current && !cartRef.current.contains(e.target))
+        setShowCart(false);
     };
     if (showCart) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showCart]);
 
-  const addToCart    = (product) => setCart(prev => [...prev, product]);
+  const addToCart = (product) => setCart((prev) => [...prev, product]);
   const removeFromCart = (index) => {
     const updated = [...cart];
     updated.splice(index, 1);
@@ -336,32 +361,46 @@ function App() {
     try {
       setLoading(true);
       setError(null);
-      setProducts([]); setPrices([]); setPrediction(null);
-      setHistory([]); setShowGraph(false);
-      setAdvisor(null); setAlertSuccess(false);
+      setProducts([]);
+      setPrices([]);
+      setPrediction(null);
+      setHistory([]);
+      setShowGraph(false);
+      setAdvisor(null);
+      setAlertSuccess(false);
 
       const [searchRes, pricesByNameRes] = await Promise.all([
         axios.get(`${API}/search/${encodeURIComponent(query)}`),
-        axios.get(`${API}/prices-by-name/${encodeURIComponent(query)}`).catch(() => ({ data: [] })),
+        axios
+          .get(`${API}/prices-by-name/${encodeURIComponent(query)}`)
+          .catch(() => ({ data: [] })),
       ]);
       setProducts(searchRes.data);
       setPrices(pricesByNameRes.data);
 
       let product_id = pricesByNameRes.data[0]?.product_id;
       if (!product_id) {
-        const productRes = await axios.get(`${API}/products?search=${encodeURIComponent(query)}`);
+        const productRes = await axios.get(
+          `${API}/products?search=${encodeURIComponent(query)}`,
+        );
         product_id = productRes.data[0]?.id;
       }
 
       if (product_id) {
         const [predRes, historyRes] = await Promise.all([
-          axios.get(`${API}/price-prediction/${product_id}`).catch(() => ({ data: null })),
-          axios.get(`${API}/price-history/${product_id}`).catch(() => ({ data: [] })),
+          axios
+            .get(`${API}/price-prediction/${product_id}`)
+            .catch(() => ({ data: null })),
+          axios
+            .get(`${API}/price-history/${product_id}`)
+            .catch(() => ({ data: [] })),
         ]);
         if (predRes.data && !predRes.data.message) setPrediction(predRes.data);
         if (Array.isArray(historyRes.data)) setHistory(historyRes.data);
 
-        const dealRes = await axios.get(`${API}/deals/${product_id}`).catch(() => ({ data: {} }));
+        const dealRes = await axios
+          .get(`${API}/deals/${product_id}`)
+          .catch(() => ({ data: {} }));
         fetchAIAdvisor(query, pricesByNameRes.data, predRes.data, dealRes.data);
       }
 
@@ -373,14 +412,19 @@ function App() {
     }
   };
 
-  const fetchAIAdvisor = async (productName, pricesData, predictionData, dealData) => {
+  const fetchAIAdvisor = async (
+    productName,
+    pricesData,
+    predictionData,
+    dealData,
+  ) => {
     try {
       setAdvisorLoading(true);
       const res = await axios.post(`${API}/ai/advisor`, {
         product_name: productName,
-        prices:       pricesData,
-        prediction:   predictionData,
-        deal:         dealData,
+        prices: pricesData,
+        prediction: predictionData,
+        deal: dealData,
       });
       setAdvisor(res.data);
     } catch (err) {
@@ -396,30 +440,35 @@ function App() {
     setChatInput("");
 
     const newUserMsg = { role: "user", content: userMessage };
-    setChatMessages(prev => [...prev, newUserMsg]);
+    setChatMessages((prev) => [...prev, newUserMsg]);
     setChatLoading(true);
 
-    setChatMessages(prev => [...prev, { role: "thinking" }]);
+    setChatMessages((prev) => [...prev, { role: "thinking" }]);
 
     try {
       const res = await axios.post(`${API}/ai/chat`, {
-        question:             userMessage,
-        conversation_history: chatMessages.filter(m => m.role !== "thinking"),
+        question: userMessage,
+        conversation_history: chatMessages
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map((m) => ({ role: m.role, content: m.content })),
       });
 
-      setChatMessages(prev => [
-        ...prev.filter(m => m.role !== "thinking"),
+      setChatMessages((prev) => [
+        ...prev.filter((m) => m.role !== "thinking"),
         {
-          role:          "assistant",
-          content:       res.data.answer,
-          context_used:  res.data.context_used,
+          role: "assistant",
+          content: res.data.answer,
+          context_used: res.data.context_used,
           products_found: res.data.products_found,
         },
       ]);
     } catch (err) {
-      setChatMessages(prev => [
-        ...prev.filter(m => m.role !== "thinking"),
-        { role: "assistant", content: "Sorry, I ran into an error. Please try again." },
+      setChatMessages((prev) => [
+        ...prev.filter((m) => m.role !== "thinking"),
+        {
+          role: "assistant",
+          content: "Sorry, I ran into an error. Please try again.",
+        },
       ]);
     } finally {
       setChatLoading(false);
@@ -432,7 +481,7 @@ function App() {
       setAgentLoading(true);
       setAgentStrategy(null);
       const res = await axios.post(`${API}/ai/cart-agent`, {
-        products: cart.map(item => item.title),
+        products: cart.map((item) => item.title),
       });
       setOptimizedCart(res.data.optimized_cart);
       setOptimizedTotal(res.data.total_cost);
@@ -449,70 +498,131 @@ function App() {
   const setAlert = async () => {
     if (!alertPrice || isNaN(alertPrice)) return;
     try {
-      await axios.post(`${API}/alerts`, { user_id: 1, product_name: query, target_price: Number(alertPrice) });
+      await axios.post(`${API}/alerts`, {
+        user_id: 1,
+        product_name: query,
+        target_price: Number(alertPrice),
+      });
       setAlertSuccess(true);
       setAlertPrice("");
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const optimizeCart = async () => {
     if (cart.length === 0) return;
     try {
       setOptimizing(true);
-      const res = await axios.post(`${API}/cart/optimize`, { products: cart.map(item => item.title) });
-      setOptimizedCart(res.data.cart);
-      setOptimizedTotal(res.data.total_cost);
-    } catch (err) { console.error(err); }
-    finally { setOptimizing(false); }
+      const res = await axios.post(`${API}/cart/optimize`, {
+        products: cart.map((item) =>
+          item.title.toLowerCase().split(" ").slice(0, 3).join(" "),
+        ),
+      });
+      if (res.data.cart && res.data.cart.length > 0) {
+        setOptimizedCart(res.data.cart);
+        setOptimizedTotal(res.data.total_cost);
+      } else {
+        setOptimizedTotal(-1); // signals "searched but nothing found"
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setOptimizing(false);
+    }
   };
 
   const chartData = {
-    labels: history.map(h => new Date(h.recorded_at).toLocaleDateString()),
-    datasets: [{ label: "Price", data: history.map(h => h.price), borderColor: "#4f8aff",
-      backgroundColor: "rgba(79,138,255,0.06)", fill: true, tension: 0.4, pointRadius: 3 }],
+    labels: history.map((h) => new Date(h.recorded_at).toLocaleDateString()),
+    datasets: [
+      {
+        label: "Price",
+        data: history.map((h) => h.price),
+        borderColor: "#4f8aff",
+        backgroundColor: "rgba(79,138,255,0.06)",
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+      },
+    ],
   };
 
-  const minPrice = products.length ? Math.min(...products.map(x => x.price)) : null;
-  const maxPrice = products.length ? Math.max(...products.map(x => x.price)) : null;
-  const savings  = (minPrice && maxPrice && maxPrice !== minPrice) ? maxPrice - minPrice : 0;
-  const priceDir = prediction ? (prediction.predicted_price >= prediction.current_price ? "up" : "down") : null;
+  const minPrice = products.length
+    ? Math.min(...products.map((x) => x.price))
+    : null;
+  const maxPrice = products.length
+    ? Math.max(...products.map((x) => x.price))
+    : null;
+  const savings =
+    minPrice && maxPrice && maxPrice !== minPrice ? maxPrice - minPrice : 0;
+  const priceDir = prediction
+    ? prediction.predicted_price >= prediction.current_price
+      ? "up"
+      : "down"
+    : null;
 
-  const verdictClass = advisor?.verdict === "Buy Now" || advisor?.verdict === "Good Deal"
-    ? "verdict-buy" : advisor?.verdict === "Wait" ? "verdict-wait" : "verdict-deal";
+  const verdictClass =
+    advisor?.verdict === "Buy Now" || advisor?.verdict === "Good Deal"
+      ? "verdict-buy"
+      : advisor?.verdict === "Wait"
+        ? "verdict-wait"
+        : "verdict-deal";
 
   return (
     <>
       <style>{styles}</style>
       <div className="bg-grid" />
-      <div className="orb orb-1" /><div className="orb orb-2" />
+      <div className="orb orb-1" />
+      <div className="orb orb-2" />
 
       <div className="app">
-
         <nav className="navbar">
           <div className="logo">
             <div className="logo-icon">🛒</div>
-            <div>Smart Shopping<div className="logo-sub">AI POWERED</div></div>
+            <div>
+              Smart Shopping<div className="logo-sub">AI POWERED</div>
+            </div>
           </div>
           <div className="nav-right">
-            <button className={`chat-nav-btn ${showChat ? "active" : ""}`} onClick={() => setShowChat(!showChat)}>
+            <button
+              className={`chat-nav-btn ${showChat ? "active" : ""}`}
+              onClick={() => setShowChat(!showChat)}
+            >
               🧠 AI Chat {showChat ? "▼" : "▲"}
             </button>
             <button className="cart-btn" onClick={() => setShowCart(!showCart)}>
-              🛒 Cart {cart.length > 0 && <span className="cart-badge">{cart.length}</span>}
+              🛒 Cart{" "}
+              {cart.length > 0 && (
+                <span className="cart-badge">{cart.length}</span>
+              )}
             </button>
           </div>
         </nav>
 
         <div className="hero">
-          <div className="hero-tag">price intelligence engine · RAG powered</div>
-          <h1 className="hero-title">Find the best deal,<br /><span>powered by AI</span></h1>
-          <p className="hero-sub">Compare prices · Predict trends · Ask AI anything</p>
+          <div className="hero-tag">
+            price intelligence engine · RAG powered
+          </div>
+          <h1 className="hero-title">
+            Find the best deal,
+            <br />
+            <span>powered by AI</span>
+          </h1>
+          <p className="hero-sub">
+            Compare prices · Predict trends · Ask AI anything
+          </p>
           <div className="search-wrap">
             <span className="search-icon">⌕</span>
-            <input className="search-input" placeholder="Search for any product…"
-              value={query} onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && searchProduct()} />
-            <button className="search-btn" onClick={searchProduct}>Search</button>
+            <input
+              className="search-input"
+              placeholder="Search for any product…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && searchProduct()}
+            />
+            <button className="search-btn" onClick={searchProduct}>
+              Search
+            </button>
           </div>
           {loading && <div className="loading-bar" />}
           {error && <div className="error-msg">⚠ {error}</div>}
@@ -520,21 +630,46 @@ function App() {
 
         {products.length > 0 && (
           <div className="products-section">
-            <div className="section-label">Results · {products.length} found</div>
+            <div className="section-label">
+              Results · {products.length} found
+            </div>
             <div className="products-grid">
               {products.map((p, i) => (
-                <div key={i} className={`product-card ${p.price === minPrice ? "best-deal" : ""}`}>
-                  {p.price === minPrice && <span className="best-badge">BEST DEAL</span>}
+                <div
+                  key={i}
+                  className={`product-card ${p.price === minPrice ? "best-deal" : ""}`}
+                >
+                  {p.price === minPrice && (
+                    <span className="best-badge">BEST DEAL</span>
+                  )}
                   <div className="product-platform">{p.platform}</div>
                   <div className="product-title">{p.title}</div>
                   <div className="product-price">
-                    {p.price_display || <><span>₹</span>{Number(p.price).toLocaleString("en-IN")}</>}
+                    {p.price_display || (
+                      <>
+                        <span>₹</span>
+                        {Number(p.price).toLocaleString("en-IN")}
+                      </>
+                    )}
                   </div>
                   {p.price === minPrice && savings > 0 && (
-                    <div className="savings-badge">✓ Save ₹{savings.toLocaleString("en-IN")} vs highest</div>
+                    <div className="savings-badge">
+                      ✓ Save ₹{savings.toLocaleString("en-IN")} vs highest
+                    </div>
                   )}
-                  <button className="add-btn" onClick={() => addToCart(p)}>+ Add to Cart</button>
-                  {p.url && <a className="buy-link" href={p.url} target="_blank" rel="noopener noreferrer">View on {p.platform} ↗</a>}
+                  <button className="add-btn" onClick={() => addToCart(p)}>
+                    + Add to Cart
+                  </button>
+                  {p.url && (
+                    <a
+                      className="buy-link"
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View on {p.platform} ↗
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
@@ -548,7 +683,9 @@ function App() {
               {prices.map((p, i) => (
                 <div key={i} className="compare-card">
                   <div className="compare-platform">{p.platform}</div>
-                  <div className="compare-price">₹{Number(p.price).toLocaleString("en-IN")}</div>
+                  <div className="compare-price">
+                    ₹{Number(p.price).toLocaleString("en-IN")}
+                  </div>
                 </div>
               ))}
             </div>
@@ -562,20 +699,29 @@ function App() {
                 <div className="advisor-title">🤖 AI Shopping Advisor</div>
                 {advisor && (
                   <>
-                    <span className={`verdict-badge ${verdictClass}`}>{advisor.verdict}</span>
-                    <span className={`risk-badge risk-${advisor.risk_level}`}>Risk: {advisor.risk_level}</span>
+                    <span className={`verdict-badge ${verdictClass}`}>
+                      {advisor.verdict}
+                    </span>
+                    <span className={`risk-badge risk-${advisor.risk_level}`}>
+                      Risk: {advisor.risk_level}
+                    </span>
                   </>
                 )}
                 {advisorLoading && (
-                  <div className="advisor-loading"><span className="pulse"></span> Analyzing with Llama 3…</div>
+                  <div className="advisor-loading">
+                    <span className="pulse"></span> Analyzing with Llama 3…
+                  </div>
                 )}
               </div>
               {advisor && !advisorLoading && (
                 <>
                   <div className="advisor-summary">{advisor.summary}</div>
-                  <div className="advisor-insight">💡 {advisor.key_insight}</div>
+                  <div className="advisor-insight">
+                    💡 {advisor.key_insight}
+                  </div>
                   <div className="advisor-meta">
-                    LLM: Llama 3 (Groq) · Prompt Engineering · Structured Output · Best platform: {advisor.best_platform}
+                    LLM: Llama 3 (Groq) · Prompt Engineering · Structured Output
+                    · Best platform: {advisor.best_platform}
                   </div>
                 </>
               )}
@@ -590,32 +736,53 @@ function App() {
                 <div className="ai-card-title">📊 Price Prediction</div>
                 <div className="ai-metric">
                   <span className="ai-metric-label">Current Price</span>
-                  <span className="ai-metric-value">₹{Number(prediction.current_price).toLocaleString("en-IN")}</span>
+                  <span className="ai-metric-value">
+                    ₹{Number(prediction.current_price).toLocaleString("en-IN")}
+                  </span>
                 </div>
                 <div className="ai-metric">
                   <span className="ai-metric-label">Predicted Next</span>
-                  <span className={`ai-metric-value ${priceDir === "up" ? "up" : "down"}`}>
-                    ₹{Number(prediction.predicted_price).toLocaleString("en-IN")} {priceDir === "up" ? "↑" : "↓"}
+                  <span
+                    className={`ai-metric-value ${priceDir === "up" ? "up" : "down"}`}
+                  >
+                    ₹
+                    {Number(prediction.predicted_price).toLocaleString("en-IN")}{" "}
+                    {priceDir === "up" ? "↑" : "↓"}
                   </span>
                 </div>
                 <div className="ai-metric">
                   <span className="ai-metric-label">Recommendation</span>
-                  <span className={`ai-metric-value ${prediction.recommendation === "Buy Now" ? "up" : "down"}`}>
+                  <span
+                    className={`ai-metric-value ${prediction.recommendation === "Buy Now" ? "up" : "down"}`}
+                  >
                     {prediction.recommendation}
                   </span>
                 </div>
-                {prediction.reason && <div className="prediction-reason">{prediction.reason}</div>}
+                {prediction.reason && (
+                  <div className="prediction-reason">{prediction.reason}</div>
+                )}
                 {prediction.confidence && (
-                  <span className={`confidence-badge confidence-${prediction.confidence}`}>
+                  <span
+                    className={`confidence-badge confidence-${prediction.confidence}`}
+                  >
                     {prediction.confidence.toUpperCase()} CONFIDENCE
                   </span>
                 )}
                 <div className="alert-form">
-                  <input className="alert-input" type="number" placeholder="Alert me at ₹..."
-                    value={alertPrice} onChange={e => setAlertPrice(e.target.value)} />
-                  <button className="alert-btn" onClick={setAlert}>🔔 Notify Me</button>
+                  <input
+                    className="alert-input"
+                    type="number"
+                    placeholder="Alert me at ₹..."
+                    value={alertPrice}
+                    onChange={(e) => setAlertPrice(e.target.value)}
+                  />
+                  <button className="alert-btn" onClick={setAlert}>
+                    🔔 Notify Me
+                  </button>
                 </div>
-                {alertSuccess && <div className="alert-success">✓ Alert set!</div>}
+                {alertSuccess && (
+                  <div className="alert-success">✓ Alert set!</div>
+                )}
               </div>
             )}
             {showGraph && (
@@ -629,7 +796,10 @@ function App() {
 
         {history.length > 0 && (
           <div className="trend-wrap">
-            <button className="trend-btn" onClick={() => setShowGraph(!showGraph)}>
+            <button
+              className="trend-btn"
+              onClick={() => setShowGraph(!showGraph)}
+            >
               {showGraph ? "Hide" : "Show"} Trend Analysis
             </button>
           </div>
@@ -639,39 +809,75 @@ function App() {
           <div className="cart-sidebar" ref={cartRef}>
             <div className="cart-header">
               <span className="cart-title">Your Cart · {cart.length}</span>
-              <button className="cart-close" onClick={() => setShowCart(false)}>✕</button>
+              <button className="cart-close" onClick={() => setShowCart(false)}>
+                ✕
+              </button>
             </div>
             <div className="cart-body">
-              {cart.length === 0 ? <div className="cart-empty">No items yet.</div> :
+              {cart.length === 0 ? (
+                <div className="cart-empty">No items yet.</div>
+              ) : (
                 cart.map((item, i) => (
                   <div key={i} className="cart-item">
                     <div className="cart-item-title">{item.title}</div>
-                    <div className="cart-item-price">₹{Number(item.price).toLocaleString("en-IN")}</div>
-                    <button className="cart-remove" onClick={() => removeFromCart(i)}>✕ Remove</button>
+                    <div className="cart-item-price">
+                      ₹{Number(item.price).toLocaleString("en-IN")}
+                    </div>
+                    <button
+                      className="cart-remove"
+                      onClick={() => removeFromCart(i)}
+                    >
+                      ✕ Remove
+                    </button>
                   </div>
                 ))
-              }
+              )}
             </div>
             {cart.length > 0 && (
               <div className="cart-footer">
                 <div className="cart-total">
                   <span className="cart-total-label">Total</span>
-                  <span className="cart-total-value">₹{totalPrice.toLocaleString("en-IN")}</span>
+                  <span className="cart-total-value">
+                    ₹{totalPrice.toLocaleString("en-IN")}
+                  </span>
                 </div>
-                {optimizedTotal && (
+                {optimizedTotal > 0 && (
                   <div className="optimized-total">
-                    ✓ Optimized: ₹{Number(optimizedTotal).toLocaleString("en-IN")}
-                    {" "}(Save ₹{(totalPrice - optimizedTotal).toLocaleString("en-IN")})
+                    ✓ Optimized: ₹
+                    {Number(optimizedTotal).toLocaleString("en-IN")} (Save ₹
+                    {(totalPrice - optimizedTotal).toLocaleString("en-IN")})
+                  </div>
+                )}
+                {optimizedTotal === -1 && (
+                  <div
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 12,
+                      color: "var(--amber)",
+                      marginBottom: 10,
+                    }}
+                  >
+                    ⚠ Search these products first so we have price data for them
                   </div>
                 )}
 
                 {agentStrategy && (
                   <div className="agent-strategy">
-                    <div className="agent-label">🤖 AI Strategy (Multi-Agent)</div>
+                    <div className="agent-label">
+                      🤖 AI Strategy (Multi-Agent)
+                    </div>
                     {agentStrategy}
                     {agentSavings > 0 && (
-                      <div style={{color:"var(--green)", fontFamily:"var(--font-mono)", fontSize:12, marginTop:8}}>
-                        Total savings: ₹{Number(agentSavings).toLocaleString("en-IN")}
+                      <div
+                        style={{
+                          color: "var(--green)",
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 12,
+                          marginTop: 8,
+                        }}
+                      >
+                        Total savings: ₹
+                        {Number(agentSavings).toLocaleString("en-IN")}
                       </div>
                     )}
                     {agentPipeline && (
@@ -682,11 +888,25 @@ function App() {
                   </div>
                 )}
 
-                <button className="optimize-btn" onClick={runAgentCartOptimizer} disabled={agentLoading}>
-                  {agentLoading ? "🤖 Agents working..." : "🤖 AI Agent Optimize"}
+                <button
+                  className="optimize-btn"
+                  onClick={runAgentCartOptimizer}
+                  disabled={agentLoading}
+                >
+                  {agentLoading
+                    ? "🤖 Agents working..."
+                    : "🤖 AI Agent Optimize"}
                 </button>
-                <button className="optimize-btn" onClick={optimizeCart} disabled={optimizing}
-                  style={{background:"rgba(79,138,255,0.08)", borderColor:"rgba(79,138,255,0.35)", color:"var(--accent)"}}>
+                <button
+                  className="optimize-btn"
+                  onClick={optimizeCart}
+                  disabled={optimizing}
+                  style={{
+                    background: "rgba(79,138,255,0.08)",
+                    borderColor: "rgba(79,138,255,0.35)",
+                    color: "var(--accent)",
+                  }}
+                >
                   {optimizing ? "Optimizing..." : "⚡ Quick Optimize"}
                 </button>
                 <button className="checkout-btn">Proceed to Checkout →</button>
@@ -700,24 +920,37 @@ function App() {
             <div className="chat-header">
               <div className="chat-header-left">
                 <div>
-                  <div style={{display:"flex", alignItems:"center", gap:8}}>
-                    <div className="chat-header-title">AI Shopping Assistant</div>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <div className="chat-header-title">
+                      AI Shopping Assistant
+                    </div>
                     <span className="rag-badge">RAG</span>
                   </div>
-                  <div className="chat-header-sub">Answers from your real price data</div>
+                  <div className="chat-header-sub">
+                    Answers from your real price data
+                  </div>
                 </div>
               </div>
-              <button className="chat-close-btn" onClick={() => setShowChat(false)}>✕</button>
+              <button
+                className="chat-close-btn"
+                onClick={() => setShowChat(false)}
+              >
+                ✕
+              </button>
             </div>
             <div className="chat-messages">
               {chatMessages.length === 0 && (
                 <div className="chat-empty">
-                  Ask me anything about products & prices.<br />
-                  Try: "Which laptop is cheapest right now?"<br />
-                  or: "Should I buy {query || 'this product'} today?"
+                  Ask me anything about products & prices.
+                  <br />
+                  Try: "Which laptop is cheapest right now?"
+                  <br />
+                  or: "Should I buy {query || "this product"} today?"
                 </div>
               )}
-              {chatMessages.map((msg, i) => (
+              {chatMessages.map((msg, i) =>
                 msg.role === "thinking" ? (
                   <div key={i} className="chat-msg thinking">
                     <span className="pulse"></span> Searching database…
@@ -727,19 +960,28 @@ function App() {
                     {msg.content}
                     {msg.role === "assistant" && msg.context_used && (
                       <div className="rag-context">
-                        ✓ Answered from {msg.products_found} price records in database
+                        ✓ Answered from {msg.products_found} price records in
+                        database
                       </div>
                     )}
                   </div>
-                )
-              ))}
+                ),
+              )}
               <div ref={chatEndRef} />
             </div>
             <div className="chat-input-row">
-              <input className="chat-input" placeholder="Ask about any product…"
-                value={chatInput} onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendChatMessage()} />
-              <button className="chat-send-btn" onClick={sendChatMessage} disabled={chatLoading}>
+              <input
+                className="chat-input"
+                placeholder="Ask about any product…"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
+              />
+              <button
+                className="chat-send-btn"
+                onClick={sendChatMessage}
+                disabled={chatLoading}
+              >
                 Send
               </button>
             </div>
@@ -748,7 +990,9 @@ function App() {
 
         <footer className="footer">
           <div className="footer-name">Harsh Rana 🚀</div>
-          <div className="footer-sub">AI SMART SHOPPING PLATFORM · RAG · LLM · MULTI-AGENT</div>
+          <div className="footer-sub">
+            AI SMART SHOPPING PLATFORM · RAG · LLM · MULTI-AGENT
+          </div>
         </footer>
       </div>
     </>

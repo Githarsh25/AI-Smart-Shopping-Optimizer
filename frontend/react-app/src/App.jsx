@@ -23,258 +23,266 @@ ChartJS.register(
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #07080d; --surface: #0e1017; --surface2: #141720;
-    --border: rgba(255,255,255,0.06); --accent: #4f8aff; --accent2: #a78bfa;
-    --green: #34d399; --red: #f87171; --amber: #fbbf24;
-    --text: #e8eaf0; --muted: #5a5f72;
-    --font-head: 'Syne', sans-serif; --font-mono: 'DM Mono', monospace;
+    --bg: #f1f3f6; --surface: #ffffff; --surface2: #f5f5f5;
+    --border: #e0e0e0; --accent: #2874f0; --accent2: #ff9f00;
+    --green: #388e3c; --red: #d32f2f; --amber: #f57c00;
+    --text: #212121; --muted: #878787;
+    --font-head: 'Inter', 'Roboto', sans-serif; --font-mono: 'Inter', 'Roboto', sans-serif;
   }
-  body { background: var(--bg); color: var(--text); font-family: var(--font-head); }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
-  .bg-grid {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background-image: linear-gradient(rgba(79,138,255,0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(79,138,255,0.035) 1px, transparent 1px);
-    background-size: 48px 48px;
-  }
-  .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
-  .orb-1 { width: 500px; height: 500px; top: -120px; left: -100px;
-    background: radial-gradient(circle, rgba(79,138,255,0.12) 0%, transparent 70%);
-    animation: driftA 18s ease-in-out infinite alternate; }
-  .orb-2 { width: 400px; height: 400px; bottom: -80px; right: -60px;
-    background: radial-gradient(circle, rgba(167,139,250,0.10) 0%, transparent 70%);
-    animation: driftB 22s ease-in-out infinite alternate; }
-  @keyframes driftA { from{transform:translate(0,0) scale(1)} to{transform:translate(60px,40px) scale(1.1)} }
-  @keyframes driftB { from{transform:translate(0,0) scale(1)} to{transform:translate(-50px,-30px) scale(1.08)} }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-head); font-size: 14px; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: #f1f1f1; }
   .app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
   /* NAVBAR */
-  .navbar { display: flex; justify-content: space-between; align-items: center; padding: 0 48px; height: 68px;
-    background: rgba(7,8,13,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100; gap: 12px; }
-  .logo { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
-  .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 9px; display: flex; align-items: center; justify-content: center;
-    font-size: 16px; box-shadow: 0 0 20px rgba(79,138,255,0.35); }
-  .logo-sub { font-size: 11px; font-weight: 400; color: var(--muted); font-family: var(--font-mono); letter-spacing: 1px; }
+  .navbar { display: flex; justify-content: space-between; align-items: center; padding: 0 32px; height: 56px;
+    background: #2874f0; position: sticky; top: 0; z-index: 100; gap: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .logo { font-size: 20px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
+  .logo-icon { font-size: 22px; }
+  .logo-sub { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.85); letter-spacing: 0.5px; }
   .nav-right { display: flex; gap: 10px; align-items: center; }
-
-  /* NEW: AI Chat toggle button in navbar */
-  .chat-nav-btn { display: flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 10px;
-    border: 1px solid rgba(167,139,250,0.35); background: rgba(167,139,250,0.08); color: var(--accent2);
-    font-family: var(--font-head); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-  .chat-nav-btn:hover { background: rgba(167,139,250,0.18); }
-  .chat-nav-btn.active { background: rgba(167,139,250,0.2); border-color: var(--accent2); }
-
-  .cart-btn { position: relative; display: flex; align-items: center; gap: 8px; padding: 9px 20px;
-    border-radius: 10px; border: 1px solid var(--border); background: var(--surface2);
-    color: var(--text); font-family: var(--font-head); font-size: 14px; font-weight: 600;
+  .chat-nav-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.6); background: transparent; color: #fff;
+    font-family: var(--font-head); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .chat-nav-btn:hover { background: rgba(255,255,255,0.1); }
+  .chat-nav-btn.active { background: rgba(255,255,255,0.2); border-color: #fff; }
+  .cart-btn { position: relative; display: flex; align-items: center; gap: 8px; padding: 8px 18px;
+    border-radius: 4px; border: none; background: #ff9f00;
+    color: #212121; font-family: var(--font-head); font-size: 14px; font-weight: 700;
     cursor: pointer; transition: all 0.2s ease; }
-  .cart-btn:hover { background: var(--surface); border-color: rgba(79,138,255,0.35); }
-  .cart-badge { position: absolute; top: -7px; right: -7px; background: var(--accent); color: #fff;
+  .cart-btn:hover { background: #f5971a; }
+  .cart-badge { position: absolute; top: -6px; right: -6px; background: #d32f2f; color: #fff;
     font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); }
+    display: flex; align-items: center; justify-content: center; }
 
   /* HERO */
-  .hero { display: flex; flex-direction: column; align-items: center; padding: 64px 24px 16px; gap: 8px; }
-  .hero-tag { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: 2px;
-    text-transform: uppercase; padding: 4px 12px; border: 1px solid rgba(79,138,255,0.25);
-    border-radius: 999px; background: rgba(79,138,255,0.06); }
-  .hero-title { font-size: clamp(28px,5vw,52px); font-weight: 800; text-align: center; letter-spacing: -1.5px; line-height: 1.1; }
-  .hero-title span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero { display: flex; flex-direction: column; align-items: center; padding: 48px 24px 16px; gap: 8px;
+    background: #fff; border-bottom: 1px solid var(--border); }
+  .hero-title { font-size: 32px; font-weight: 700; text-align: center; letter-spacing: -0.5px;
+    line-height: 1.2; color: var(--text); }
+  .hero-title span { color: var(--accent); }
   .hero-sub { color: var(--muted); font-size: 15px; text-align: center; margin-top: 4px; }
-  .search-wrap { width: 100%; max-width: 680px; margin: 28px auto 0; display: flex; align-items: center;
-    background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
-    transition: border-color 0.2s, box-shadow 0.2s; }
-  .search-wrap:focus-within { border-color: rgba(79,138,255,0.4); box-shadow: 0 0 0 3px rgba(79,138,255,0.08); }
-  .search-icon { padding: 0 16px; color: var(--muted); font-size: 17px; flex-shrink: 0; }
-  .search-input { flex: 1; padding: 16px 0; background: transparent; border: none; outline: none;
+  .search-wrap { width: 100%; max-width: 600px; margin: 24px auto 0; display: flex; align-items: center;
+    background: #fff; border: 2px solid var(--border); border-radius: 4px; overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s; height: 48px; }
+  .search-wrap:focus-within { border-color: #2874f0; box-shadow: 0 0 0 3px rgba(40,116,240,0.1); }
+  .search-icon { padding: 0 14px; color: var(--muted); font-size: 17px; flex-shrink: 0; }
+  .search-input { flex: 1; padding: 12px 0; background: transparent; border: none; outline: none;
     color: var(--text); font-family: var(--font-head); font-size: 15px; }
-  .search-input::placeholder { color: var(--muted); }
-  .search-btn { padding: 16px 28px; background: linear-gradient(135deg, var(--accent), #3a70e0);
-    border: none; color: #fff; font-family: var(--font-head); font-weight: 700; font-size: 14px;
-    cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
-  .search-btn:hover { opacity: 0.9; }
-  .loading-bar { width: 100%; max-width: 680px; margin: 16px auto 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
-    background-size: 300% 100%; animation: shimmer 1.2s linear infinite; border-radius: 2px; }
-  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-  .error-msg { width: 100%; max-width: 680px; margin: 12px auto 0; padding: 10px 16px; border-radius: 10px;
-    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.25);
-    color: var(--red); font-size: 14px; font-family: var(--font-mono); text-align: center; }
+  .search-input::placeholder { color: #b0b0b0; }
+  .search-btn { padding: 0 28px; height: 100%; background: #2874f0;
+    border: none; color: #fff; font-family: var(--font-head); font-weight: 600; font-size: 14px;
+    cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+  .search-btn:hover { background: #1a5dc8; }
+  .loading-text { width: 100%; max-width: 600px; margin: 14px auto 0; text-align: center;
+    color: var(--accent); font-size: 14px; font-weight: 500; }
+  .error-msg { width: 100%; max-width: 600px; margin: 12px auto 0; padding: 10px 16px; border-radius: 4px;
+    background: #fde8e8; border: 1px solid #f5c6c6;
+    color: var(--red); font-size: 14px; text-align: center; }
 
-  .section-label { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 2px;
-    text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .section-label { font-size: 12px; color: var(--muted); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
   /* PRODUCT CARDS */
-  .products-section { width: 100%; max-width: 1100px; margin: 52px auto 0; padding: 0 24px; }
-  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px; }
-  .product-card { position: relative; padding: 24px; border-radius: 16px; border: 1px solid var(--border);
-    background: var(--surface); transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; overflow: hidden; }
-  .product-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(0,0,0,0.5); border-color: rgba(79,138,255,0.2); }
-  .product-card.best-deal { border-color: rgba(52,211,153,0.35); background: rgba(52,211,153,0.04); }
-  .best-badge { position: absolute; top: 16px; right: 16px; background: rgba(52,211,153,0.15);
-    border: 1px solid rgba(52,211,153,0.3); color: var(--green); font-family: var(--font-mono);
-    font-size: 10px; padding: 3px 10px; border-radius: 999px; letter-spacing: 1px; }
-  .product-platform { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
-  .product-title { font-size: 15px; font-weight: 600; line-height: 1.4; color: var(--text); margin-bottom: 14px; }
-  .product-price { font-size: 30px; font-weight: 800; letter-spacing: -1px; font-family: var(--font-mono);
-    background: linear-gradient(90deg, #fff, rgba(255,255,255,0.7)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .savings-badge { font-family: var(--font-mono); font-size: 12px; color: var(--green); margin-top: 6px; }
-  .add-btn { margin-top: 20px; width: 100%; padding: 11px; border: 1px solid rgba(79,138,255,0.3);
-    border-radius: 10px; background: rgba(79,138,255,0.08); color: var(--accent);
-    font-family: var(--font-head); font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-  .add-btn:hover { background: rgba(79,138,255,0.18); }
-  .buy-link { display: block; margin-top: 8px; text-align: center; font-family: var(--font-mono);
-    font-size: 11px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
-  .buy-link:hover { color: var(--accent); }
+  .products-section { width: 100%; max-width: 1100px; margin: 32px auto 0; padding: 0 24px; }
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .product-card { position: relative; padding: 20px; border-radius: 4px; border: 1px solid var(--border);
+    background: #fff; transition: transform 0.2s, box-shadow 0.2s; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .product-card:hover { transform: translateY(-3px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  .product-card.best-deal { border-color: #388e3c; }
+  .best-badge { position: absolute; top: 0; left: 0; background: #388e3c;
+    color: #fff; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 0 0 4px 0; letter-spacing: 0.5px; }
+  .product-platform { font-size: 12px; color: var(--accent); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 8px; font-weight: 500; }
+  .product-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--text); margin-bottom: 12px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .product-price { font-size: 24px; font-weight: 700; color: var(--text); }
+  .savings-badge { font-size: 13px; color: var(--green); margin-top: 6px; font-weight: 500; }
+  .add-btn { margin-top: 16px; width: 100%; padding: 10px; border: none;
+    border-radius: 2px; background: #ff9f00; color: #212121;
+    font-family: var(--font-head); font-weight: 700; font-size: 14px; cursor: pointer;
+    transition: background 0.2s; height: 40px; }
+  .add-btn:hover { background: #f5971a; }
+  .buy-link { display: block; margin-top: 8px; text-align: center;
+    font-size: 12px; color: var(--accent); text-decoration: none; transition: color 0.2s; }
+  .buy-link:hover { color: #1a5dc8; text-decoration: underline; }
 
   /* COMPARE */
-  .compare-section { width: 100%; max-width: 1100px; margin: 52px auto 0; padding: 0 24px; }
-  .compare-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
-  .compare-card { padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; font-family: var(--font-mono); }
-  .compare-platform { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-  .compare-price { font-size: 20px; font-weight: 500; color: var(--text); }
+  .compare-section { width: 100%; max-width: 1100px; margin: 32px auto 0; padding: 0 24px; }
+  .compare-grid { display: grid; grid-template-columns: 1fr; gap: 0; background: #fff; border: 1px solid var(--border);
+    border-left: 4px solid #2874f0; border-radius: 4px; overflow: hidden; }
+  .compare-card { padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #f0f0f0; background: #fff; }
+  .compare-card:last-child { border-bottom: none; }
+  .compare-card.cheapest { background: #e8f0fe; }
+  .compare-platform { font-size: 13px; color: var(--text); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+  .compare-price { font-size: 18px; font-weight: 700; color: var(--text); }
 
   /* AI ROW */
-  .ai-row { width: 100%; max-width: 1100px; margin: 52px auto 0; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .ai-row { width: 100%; max-width: 1100px; margin: 32px auto 0; padding: 0 24px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 768px) { .ai-row { grid-template-columns: 1fr; } }
-  .ai-card { padding: 28px; border-radius: 16px; border: 1px solid rgba(79,138,255,0.2);
-    background: linear-gradient(135deg, rgba(79,138,255,0.06), rgba(167,139,250,0.04)); }
-  .ai-card-title { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
-  .ai-metric { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .ai-card { padding: 24px; border-radius: 4px; border: 1px solid var(--border);
+    background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .ai-card-title { font-size: 14px; color: var(--accent); letter-spacing: 0.5px;
+    text-transform: uppercase; margin-bottom: 16px; font-weight: 600; }
+  .ai-metric { display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
   .ai-metric:last-of-type { border-bottom: none; }
-  .ai-metric-label { font-size: 13px; color: var(--muted); font-family: var(--font-mono); }
-  .ai-metric-value { font-size: 20px; font-weight: 700; font-family: var(--font-mono); color: var(--text); }
+  .ai-metric-label { font-size: 13px; color: var(--muted); }
+  .ai-metric-value { font-size: 18px; font-weight: 700; color: var(--text); }
   .ai-metric-value.up { color: var(--green); }
   .ai-metric-value.down { color: var(--red); }
-  .prediction-reason { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); line-height: 1.5; }
-  .confidence-badge { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; padding: 3px 10px; border-radius: 999px; margin-top: 10px; }
-  .confidence-high   { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: var(--green); }
-  .confidence-medium { background: rgba(251,191,36,0.12);  border: 1px solid rgba(251,191,36,0.3);  color: var(--amber); }
-  .confidence-low    { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); color: var(--red); }
-  .alert-form { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
-  .alert-input { flex: 1; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text); font-family: var(--font-mono); font-size: 13px; outline: none; }
-  .alert-input:focus { border-color: rgba(79,138,255,0.4); }
-  .alert-btn { padding: 9px 16px; border-radius: 8px; border: 1px solid rgba(167,139,250,0.35);
-    background: rgba(167,139,250,0.1); color: var(--accent2); font-family: var(--font-head);
-    font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
-  .alert-btn:hover { background: rgba(167,139,250,0.2); }
-  .alert-success { font-family: var(--font-mono); font-size: 12px; color: var(--green); margin-top: 8px; }
-  .graph-card { padding: 28px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); }
-  .graph-card-title { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
-  .trend-wrap { text-align: center; margin: 32px 0 0; }
-  .trend-btn { padding: 12px 32px; border-radius: 10px; border: 1px solid rgba(167,139,250,0.35);
-    background: rgba(167,139,250,0.08); color: var(--accent2); font-family: var(--font-head);
-    font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-  .trend-btn:hover { background: rgba(167,139,250,0.16); }
+  .prediction-reason { font-size: 13px; color: var(--muted); margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid #f0f0f0; line-height: 1.6; }
+  .confidence-badge { display: inline-block; font-size: 11px; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 4px; margin-top: 10px; font-weight: 500; }
+  .confidence-high   { background: #e8f5e9; color: var(--green); }
+  .confidence-medium { background: #fff3e0; color: var(--amber); }
+  .confidence-low    { background: #fde8e8; color: var(--red); }
+  .alert-form { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0f0f0; display: flex; gap: 8px; }
+  .alert-input { flex: 1; padding: 9px 12px; background: #fff; border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text); font-family: var(--font-head); font-size: 13px; outline: none; }
+  .alert-input:focus { border-color: #2874f0; }
+  .alert-btn { padding: 9px 16px; border-radius: 4px; border: none;
+    background: #2874f0; color: #fff; font-family: var(--font-head);
+    font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+  .alert-btn:hover { background: #1a5dc8; }
+  .alert-success { font-size: 13px; color: var(--green); margin-top: 8px; font-weight: 500; }
+  .graph-card { padding: 24px; border-radius: 4px; border: 1px solid var(--border);
+    background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .graph-card-title { font-size: 14px; color: var(--muted); letter-spacing: 0.5px;
+    text-transform: uppercase; margin-bottom: 16px; font-weight: 600; }
+  .trend-wrap { text-align: center; margin: 24px 0 0; }
+  .trend-btn { padding: 10px 28px; border-radius: 4px; border: 1px solid #2874f0;
+    background: transparent; color: #2874f0; font-family: var(--font-head);
+    font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .trend-btn:hover { background: #e8f0fe; }
 
-  /* ── NEW: AI ADVISOR CARD ── */
-  .advisor-section { width: 100%; max-width: 1100px; margin: 32px auto 0; padding: 0 24px; }
-  .advisor-card { padding: 28px; border-radius: 16px;
-    border: 1px solid rgba(52,211,153,0.25);
-    background: linear-gradient(135deg, rgba(52,211,153,0.05), rgba(79,138,255,0.03)); }
-  .advisor-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-  .advisor-title { font-family: var(--font-mono); font-size: 11px; color: var(--green); letter-spacing: 2px; text-transform: uppercase; }
-  .advisor-loading { font-family: var(--font-mono); font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  /* AI ADVISOR CARD */
+  .advisor-section { width: 100%; max-width: 1100px; margin: 24px auto 0; padding: 0 24px; }
+  .advisor-card { padding: 24px; border-radius: 4px; border: 1px solid var(--border);
+    border-top: 3px solid #2874f0; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .advisor-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .advisor-title { font-size: 14px; color: var(--accent); letter-spacing: 0.5px;
+    text-transform: uppercase; font-weight: 600; }
+  .advisor-loading { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
   .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  .verdict-badge { font-family: var(--font-mono); font-size: 12px; font-weight: 500; padding: 4px 14px;
-    border-radius: 999px; letter-spacing: 1px; }
-  .verdict-buy    { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.3); color: var(--green); }
-  .verdict-wait   { background: rgba(251,191,36,0.15);  border: 1px solid rgba(251,191,36,0.3);  color: var(--amber); }
-  .verdict-deal   { background: rgba(79,138,255,0.15);  border: 1px solid rgba(79,138,255,0.3);  color: var(--accent); }
-  .risk-badge { font-family: var(--font-mono); font-size: 10px; padding: 3px 10px; border-radius: 999px; }
-  .risk-Low    { background: rgba(52,211,153,0.1);  border: 1px solid rgba(52,211,153,0.2);  color: var(--green); }
-  .risk-Medium { background: rgba(251,191,36,0.1);  border: 1px solid rgba(251,191,36,0.2);  color: var(--amber); }
-  .risk-High   { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: var(--red); }
+  .verdict-badge { font-size: 13px; font-weight: 600; padding: 5px 16px; border-radius: 4px; }
+  .verdict-buy  { background: #e8f5e9; color: var(--green); }
+  .verdict-wait { background: #fff3e0; color: var(--amber); }
+  .verdict-deal { background: #e8f0fe; color: var(--accent); }
+  .risk-badge { font-size: 11px; padding: 3px 10px; border-radius: 4px; font-weight: 500; }
+  .risk-Low    { background: #e8f5e9; color: var(--green); }
+  .risk-Medium { background: #fff3e0; color: var(--amber); }
+  .risk-High   { background: #fde8e8; color: var(--red); }
   .advisor-summary { font-size: 15px; color: var(--text); line-height: 1.7; margin-bottom: 14px; }
-  .advisor-insight { font-family: var(--font-mono); font-size: 12px; color: var(--muted); line-height: 1.6;
-    padding: 12px 16px; background: var(--surface2); border-radius: 8px; border-left: 3px solid var(--accent); }
-  .advisor-meta { font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: 12px; letter-spacing: 1px; }
+  .advisor-insight { font-size: 13px; color: var(--text); line-height: 1.6;
+    padding: 12px 16px; background: #e8f0fe; border-radius: 4px; border-left: 3px solid var(--accent); }
+  .advisor-meta { font-size: 11px; color: var(--muted); margin-top: 12px; letter-spacing: 0.5px; }
 
-  /* ── NEW: RAG CHAT ── */
+  /* RAG CHAT */
   .chat-panel { position: fixed; bottom: 0; right: 24px; width: 380px; z-index: 150;
-    background: var(--surface); border: 1px solid var(--border); border-bottom: none;
-    border-radius: 16px 16px 0 0; box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+    background: #fff; border: 1px solid var(--border); border-bottom: none;
+    border-radius: 4px 4px 0 0; box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
     display: flex; flex-direction: column; max-height: 520px; }
-  .chat-header { padding: 16px 20px; border-bottom: 1px solid var(--border);
+  .chat-header { padding: 14px 20px; border-bottom: 1px solid var(--border);
+    background: #2874f0; border-radius: 4px 4px 0 0;
     display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
   .chat-header-left { display: flex; align-items: center; gap: 8px; }
-  .chat-header-title { font-size: 14px; font-weight: 700; }
-  .chat-header-sub { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; }
-  .rag-badge { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; padding: 2px 7px;
-    border-radius: 4px; background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); color: var(--accent2); }
-  .chat-close-btn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
-    background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .chat-header-title { font-size: 14px; font-weight: 700; color: #fff; }
+  .chat-header-sub { font-size: 11px; color: rgba(255,255,255,0.75); }
+  .rag-badge { font-size: 10px; letter-spacing: 0.5px; padding: 2px 7px;
+    border-radius: 4px; background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); }
+  .chat-close-btn { width: 28px; height: 28px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3);
+    background: transparent; color: #fff; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; font-size: 14px; }
   .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-  .chat-msg { max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; }
-  .chat-msg.user { background: rgba(79,138,255,0.15); border: 1px solid rgba(79,138,255,0.2);
-    color: var(--text); align-self: flex-end; }
-  .chat-msg.assistant { background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text); align-self: flex-start; }
-  .chat-msg.assistant .rag-context { font-family: var(--font-mono); font-size: 10px;
-    color: var(--green); margin-top: 6px; }
-  .chat-msg.thinking { background: var(--surface2); border: 1px solid var(--border);
-    color: var(--muted); align-self: flex-start; font-family: var(--font-mono); font-size: 12px;
-    display: flex; align-items: center; gap: 8px; }
-  .chat-empty { font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-align: center;
-    padding: 20px 0; line-height: 1.8; }
+  .chat-msg { max-width: 88%; padding: 10px 14px; border-radius: 4px; font-size: 13px; line-height: 1.6; }
+  .chat-msg.user { background: #2874f0; color: #fff; align-self: flex-end; }
+  .chat-msg.assistant { background: #f5f5f5; color: var(--text); align-self: flex-start; }
+  .chat-msg.assistant .rag-context { font-size: 11px; color: var(--green); margin-top: 6px; }
+  .chat-msg.thinking { background: #f5f5f5; color: var(--muted); align-self: flex-start;
+    font-size: 12px; display: flex; align-items: center; gap: 8px; }
+  .chat-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 20px 0; line-height: 1.8; }
   .chat-input-row { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-shrink: 0; }
-  .chat-input { flex: 1; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text); font-family: var(--font-head); font-size: 13px; outline: none; }
-  .chat-input:focus { border-color: rgba(167,139,250,0.4); }
-  .chat-send-btn { padding: 10px 16px; border-radius: 8px; border: none;
-    background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #fff;
-    font-family: var(--font-head); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  .chat-input { flex: 1; padding: 10px 12px; background: #fff; border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text); font-family: var(--font-head); font-size: 13px; outline: none; }
+  .chat-input:focus { border-color: #2874f0; }
+  .chat-send-btn { padding: 10px 16px; border-radius: 4px; border: none;
+    background: #2874f0; color: #fff;
+    font-family: var(--font-head); font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
   .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* CART */
-  .cart-sidebar { position: fixed; top: 0; right: 0; height: 100%; width: 360px; background: var(--surface);
-    border-left: 1px solid var(--border); z-index: 200; display: flex; flex-direction: column; box-shadow: -20px 0 60px rgba(0,0,0,0.5); }
-  .cart-header { padding: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .cart-title { font-size: 16px; font-weight: 700; }
-  .cart-close { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .cart-body { flex: 1; overflow-y: auto; padding: 16px 24px; }
-  .cart-empty { color: var(--muted); font-family: var(--font-mono); font-size: 13px; margin-top: 20px; }
-  .cart-item { padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface2); margin-bottom: 10px; }
-  .cart-item-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-  .cart-item-price { font-family: var(--font-mono); font-size: 15px; color: var(--accent); }
-  .cart-remove { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; margin-top: 6px; font-family: var(--font-mono); }
-  .cart-remove:hover { color: var(--red); }
-  .cart-footer { padding: 20px 24px; border-top: 1px solid var(--border); }
-  .cart-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .cart-total-label { font-size: 13px; color: var(--muted); font-family: var(--font-mono); }
-  .cart-total-value { font-family: var(--font-mono); font-size: 22px; font-weight: 700; }
-  .optimize-btn { width: 100%; padding: 11px; border-radius: 10px; margin-bottom: 10px;
-    border: 1px solid rgba(52,211,153,0.35); background: rgba(52,211,153,0.08); color: var(--green);
+  .cart-sidebar { position: fixed; top: 0; right: 0; height: 100%; width: 360px; background: #fff;
+    border-left: 1px solid var(--border); z-index: 200; display: flex; flex-direction: column;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.1); }
+  .cart-header { padding: 0 20px; height: 56px; border-bottom: 1px solid var(--border); display: flex;
+    justify-content: space-between; align-items: center; background: #2874f0; }
+  .cart-title { font-size: 15px; font-weight: 700; color: #fff; }
+  .cart-close { width: 28px; height: 28px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3);
+    background: transparent; color: #fff; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; }
+  .cart-body { flex: 1; overflow-y: auto; padding: 16px 20px; background: var(--bg); }
+  .cart-empty { color: var(--muted); font-size: 13px; margin-top: 20px; }
+  .cart-item { padding: 14px; border-radius: 4px; border: 1px solid var(--border);
+    background: #fff; margin-bottom: 10px; }
+  .cart-item-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+  .cart-item-price { font-size: 15px; color: var(--accent); font-weight: 700; }
+  .cart-remove { background: none; border: none; color: var(--red); font-size: 12px;
+    cursor: pointer; margin-top: 6px; }
+  .cart-remove:hover { text-decoration: underline; }
+  .cart-footer { padding: 16px 20px; border-top: 1px solid var(--border); background: #fff; }
+  .cart-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .cart-total-label { font-size: 14px; color: var(--muted); }
+  .cart-total-value { font-size: 22px; font-weight: 700; color: var(--text); }
+  .optimize-btn { width: 100%; padding: 10px; border-radius: 4px; margin-bottom: 4px;
+    border: none; background: #2874f0; color: #fff;
     font-family: var(--font-head); font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-  .optimize-btn:hover:not(:disabled) { background: rgba(52,211,153,0.16); }
+  .optimize-btn:hover:not(:disabled) { background: #1a5dc8; }
   .optimize-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .optimized-total { font-family: var(--font-mono); font-size: 13px; color: var(--green); margin-bottom: 10px; }
+  .optimize-btn-outlined { width: 100%; padding: 10px; border-radius: 4px; margin-bottom: 4px;
+    border: 1px solid #2874f0; background: #fff; color: #2874f0;
+    font-family: var(--font-head); font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .optimize-btn-outlined:hover:not(:disabled) { background: #e8f0fe; }
+  .optimize-btn-outlined:disabled { opacity: 0.5; cursor: not-allowed; }
+  .optimize-subtitle { font-size: 11px; color: var(--muted); margin-bottom: 8px; text-align: center; }
+  .optimized-total { font-size: 13px; color: var(--green); margin-bottom: 10px; font-weight: 500; }
+  .optimized-items { margin-bottom: 10px; }
+  .optimized-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px;
+    background: #e8f0fe; border-radius: 4px; margin-bottom: 4px; font-size: 12px; }
+  .optimized-item-name { color: var(--text); font-weight: 500; flex: 1; margin-right: 8px; }
+  .optimized-item-detail { color: var(--accent); font-weight: 600; white-space: nowrap; }
+  .optimize-warning { font-size: 12px; color: var(--amber); margin-bottom: 10px; padding: 8px 12px;
+    background: #fff3e0; border-radius: 4px; border-left: 3px solid var(--amber); line-height: 1.5; }
 
-  /* NEW: AI Cart Agent result styles */
-  .agent-strategy { margin: 12px 0; padding: 12px 14px; border-radius: 10px;
-    background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2);
+  /* AI Cart Agent result */
+  .agent-strategy { margin: 10px 0; padding: 14px 16px; border-radius: 4px;
+    background: #e8f0fe; border-left: 3px solid #2874f0;
     font-size: 13px; color: var(--text); line-height: 1.65; }
-  .agent-label { font-family: var(--font-mono); font-size: 10px; color: var(--accent2);
-    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-  .agent-pipeline-badge { font-family: var(--font-mono); font-size: 10px; color: var(--muted);
-    margin-top: 10px; letter-spacing: 0.5px; }
+  .agent-label { font-size: 11px; color: var(--accent);
+    letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+  .agent-pipeline-badge { font-size: 11px; color: var(--muted); margin-top: 10px; letter-spacing: 0.5px; }
 
-  .checkout-btn { width: 100%; padding: 14px; border-radius: 10px; border: none;
-    background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff;
-    font-family: var(--font-head); font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 10px; }
+  .checkout-btn { width: 100%; padding: 14px; border-radius: 4px; border: none;
+    background: #ff9f00; color: #212121;
+    font-family: var(--font-head); font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 8px;
+    transition: background 0.2s; }
+  .checkout-btn:hover { background: #f5971a; }
 
-  .footer { margin-top: 80px; padding: 28px; text-align: center; border-top: 1px solid var(--border); }
-  .footer-name { font-weight: 700; font-size: 14px; }
-  .footer-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 1px; }
+  .footer { margin-top: 60px; padding: 24px; text-align: center; background: #fff;
+    border-top: 1px solid var(--border); }
+  .footer-name { font-weight: 700; font-size: 14px; color: var(--text); }
+  .footer-sub { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; }
 `;
 
 const chartOptions = {
@@ -282,17 +290,17 @@ const chartOptions = {
   plugins: { legend: { display: false }, tooltip: { enabled: true } },
   scales: {
     x: {
-      grid: { color: "rgba(255,255,255,0.04)" },
+      grid: { color: "rgba(0,0,0,0.06)" },
       ticks: {
-        color: "#5a5f72",
-        font: { family: "'DM Mono', monospace", size: 10 },
+        color: "#878787",
+        font: { family: "'Inter', sans-serif", size: 10 },
       },
     },
     y: {
-      grid: { color: "rgba(255,255,255,0.04)" },
+      grid: { color: "rgba(0,0,0,0.06)" },
       ticks: {
-        color: "#5a5f72",
-        font: { family: "'DM Mono', monospace", size: 10 },
+        color: "#878787",
+        font: { family: "'Inter', sans-serif", size: 10 },
       },
     },
   },
@@ -329,6 +337,9 @@ function App() {
   const [agentPipeline, setAgentPipeline] = useState(null);
   const [agentLoading, setAgentLoading] = useState(false);
 
+  const [optimizeNotFound, setOptimizeNotFound] = useState([]);
+  const [optimizeError, setOptimizeError] = useState(null);
+
   const cartRef = useRef();
   const totalPrice = cart.reduce((sum, item) => sum + Number(item.price), 0);
 
@@ -354,6 +365,9 @@ function App() {
     setOptimizedTotal(null);
     setAgentStrategy(null);
     setAgentSavings(null);
+    setAgentPipeline(null);
+    setOptimizeNotFound([]);
+    setOptimizeError(null);
   };
 
   const searchProduct = async () => {
@@ -480,6 +494,8 @@ function App() {
     try {
       setAgentLoading(true);
       setAgentStrategy(null);
+      setOptimizeError(null);
+      setOptimizeNotFound([]);
       const res = await axios.post(`${API}/ai/cart-agent`, {
         products: cart.map((item) => item.title),
       });
@@ -490,6 +506,7 @@ function App() {
       setAgentPipeline(res.data.pipeline);
     } catch (err) {
       console.error("Agent cart error:", err);
+      setOptimizeError("Search for your products first so we have price data for AI optimization.");
     } finally {
       setAgentLoading(false);
     }
@@ -514,6 +531,11 @@ function App() {
     if (cart.length === 0) return;
     try {
       setOptimizing(true);
+      setOptimizeError(null);
+      setOptimizeNotFound([]);
+      setAgentStrategy(null);
+      setAgentSavings(null);
+      setAgentPipeline(null);
       const res = await axios.post(`${API}/cart/optimize`, {
         products: cart.map((item) =>
           item.title.toLowerCase().split(" ").slice(0, 3).join(" "),
@@ -522,11 +544,15 @@ function App() {
       if (res.data.cart && res.data.cart.length > 0) {
         setOptimizedCart(res.data.cart);
         setOptimizedTotal(res.data.total_cost);
+        if (res.data.not_found) {
+          setOptimizeNotFound(res.data.not_found);
+        }
       } else {
         setOptimizedTotal(-1); // signals "searched but nothing found"
       }
     } catch (err) {
       console.error(err);
+      setOptimizeError("Could not optimize cart. Try searching for these products first.");
     } finally {
       setOptimizing(false);
     }
@@ -553,6 +579,9 @@ function App() {
   const maxPrice = products.length
     ? Math.max(...products.map((x) => x.price))
     : null;
+  const minComparePrice = prices.length
+    ? Math.min(...prices.map((x) => Number(x.price)))
+    : null;
   const savings =
     minPrice && maxPrice && maxPrice !== minPrice ? maxPrice - minPrice : 0;
   const priceDir = prediction
@@ -571,16 +600,12 @@ function App() {
   return (
     <>
       <style>{styles}</style>
-      <div className="bg-grid" />
-      <div className="orb orb-1" />
-      <div className="orb orb-2" />
-
       <div className="app">
         <nav className="navbar">
           <div className="logo">
-            <div className="logo-icon">🛒</div>
+            <span className="logo-icon">🛒</span>
             <div>
-              Smart Shopping<div className="logo-sub">AI POWERED</div>
+              ShopSmart AI<div className="logo-sub">Compare · Save · Shop Smart</div>
             </div>
           </div>
           <div className="nav-right">
@@ -588,7 +613,7 @@ function App() {
               className={`chat-nav-btn ${showChat ? "active" : ""}`}
               onClick={() => setShowChat(!showChat)}
             >
-              🧠 AI Chat {showChat ? "▼" : "▲"}
+              💬 AI Chat
             </button>
             <button className="cart-btn" onClick={() => setShowCart(!showCart)}>
               🛒 Cart{" "}
@@ -600,16 +625,11 @@ function App() {
         </nav>
 
         <div className="hero">
-          <div className="hero-tag">
-            price intelligence engine · RAG powered
-          </div>
           <h1 className="hero-title">
-            Find the best deal,
-            <br />
-            <span>powered by AI</span>
+            Compare Prices. <span>Buy Smarter.</span>
           </h1>
           <p className="hero-sub">
-            Compare prices · Predict trends · Ask AI anything
+            Real-time prices from Amazon, Flipkart & more
           </p>
           <div className="search-wrap">
             <span className="search-icon">⌕</span>
@@ -624,7 +644,7 @@ function App() {
               Search
             </button>
           </div>
-          {loading && <div className="loading-bar" />}
+          {loading && <div className="loading-text">🔍 Searching across platforms...</div>}
           {error && <div className="error-msg">⚠ {error}</div>}
         </div>
 
@@ -654,7 +674,7 @@ function App() {
                   </div>
                   {p.price === minPrice && savings > 0 && (
                     <div className="savings-badge">
-                      ✓ Save ₹{savings.toLocaleString("en-IN")} vs highest
+                      You save ₹{savings.toLocaleString("en-IN")}
                     </div>
                   )}
                   <button className="add-btn" onClick={() => addToCart(p)}>
@@ -681,7 +701,7 @@ function App() {
             <div className="section-label">Price Comparison</div>
             <div className="compare-grid">
               {prices.map((p, i) => (
-                <div key={i} className="compare-card">
+                <div key={i} className={`compare-card${Number(p.price) === minComparePrice ? " cheapest" : ""}`}>
                   <div className="compare-platform">{p.platform}</div>
                   <div className="compare-price">
                     ₹{Number(p.price).toLocaleString("en-IN")}
@@ -777,7 +797,7 @@ function App() {
                     onChange={(e) => setAlertPrice(e.target.value)}
                   />
                   <button className="alert-btn" onClick={setAlert}>
-                    🔔 Notify Me
+                    Set Alert
                   </button>
                 </div>
                 {alertSuccess && (
@@ -800,7 +820,7 @@ function App() {
               className="trend-btn"
               onClick={() => setShowGraph(!showGraph)}
             >
-              {showGraph ? "Hide" : "Show"} Trend Analysis
+              {showGraph ? "Hide" : "Show"} Price History
             </button>
           </div>
         )}
@@ -808,14 +828,14 @@ function App() {
         {showCart && (
           <div className="cart-sidebar" ref={cartRef}>
             <div className="cart-header">
-              <span className="cart-title">Your Cart · {cart.length}</span>
+              <span className="cart-title">My Cart ({cart.length} {cart.length === 1 ? "item" : "items"})</span>
               <button className="cart-close" onClick={() => setShowCart(false)}>
                 ✕
               </button>
             </div>
             <div className="cart-body">
               {cart.length === 0 ? (
-                <div className="cart-empty">No items yet.</div>
+                <div className="cart-empty">Your cart is empty.</div>
               ) : (
                 cart.map((item, i) => (
                   <div key={i} className="cart-item">
@@ -841,23 +861,41 @@ function App() {
                     ₹{totalPrice.toLocaleString("en-IN")}
                   </span>
                 </div>
-                {optimizedTotal > 0 && (
-                  <div className="optimized-total">
-                    ✓ Optimized: ₹
-                    {Number(optimizedTotal).toLocaleString("en-IN")} (Save ₹
-                    {(totalPrice - optimizedTotal).toLocaleString("en-IN")})
+                {optimizeError && (
+                  <div className="optimize-warning">
+                    ⚠ {optimizeError}
                   </div>
                 )}
+
+                {optimizedTotal > 0 && (
+                  <div className="optimized-total">
+                    ✓ Optimized Total: ₹{Number(optimizedTotal).toLocaleString("en-IN")}
+                    {totalPrice - optimizedTotal > 0 && ` (Save ₹${(totalPrice - optimizedTotal).toLocaleString("en-IN")})`}
+                  </div>
+                )}
+
+                {optimizedCart && optimizedCart.length > 0 && (
+                  <div className="optimized-items">
+                    {optimizedCart.map((item, i) => (
+                      <div key={i} className="optimized-item">
+                        <span className="optimized-item-name">{item.product}</span>
+                        <span className="optimized-item-detail">
+                          {item.platform || item.cheapest_platform} · ₹{Number(item.price || item.cheapest_price).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {optimizeNotFound.length > 0 && (
+                  <div className="optimize-warning">
+                    No price data for: {optimizeNotFound.join(", ")}. Search for these products first.
+                  </div>
+                )}
+
                 {optimizedTotal === -1 && (
-                  <div
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 12,
-                      color: "var(--amber)",
-                      marginBottom: 10,
-                    }}
-                  >
-                    ⚠ Search these products first so we have price data for them
+                  <div className="optimize-warning">
+                    ⚠ Search these products first so we have price data
                   </div>
                 )}
 
@@ -868,16 +906,8 @@ function App() {
                     </div>
                     {agentStrategy}
                     {agentSavings > 0 && (
-                      <div
-                        style={{
-                          color: "var(--green)",
-                          fontFamily: "var(--font-mono)",
-                          fontSize: 12,
-                          marginTop: 8,
-                        }}
-                      >
-                        Total savings: ₹
-                        {Number(agentSavings).toLocaleString("en-IN")}
+                      <div style={{ color: "#388e3c", fontSize: 12, fontWeight: 600, marginTop: 8 }}>
+                        Total savings: ₹{Number(agentSavings).toLocaleString("en-IN")}
                       </div>
                     )}
                     {agentPipeline && (
@@ -893,22 +923,19 @@ function App() {
                   onClick={runAgentCartOptimizer}
                   disabled={agentLoading}
                 >
-                  {agentLoading
-                    ? "🤖 Agents working..."
-                    : "🤖 AI Agent Optimize"}
+                  {agentLoading ? "🤖 Agents working..." : "🤖 AI Agent Optimize"}
                 </button>
+                <div className="optimize-subtitle">Multi-agent AI finds best deals across platforms</div>
+
                 <button
-                  className="optimize-btn"
+                  className="optimize-btn-outlined"
                   onClick={optimizeCart}
                   disabled={optimizing}
-                  style={{
-                    background: "rgba(79,138,255,0.08)",
-                    borderColor: "rgba(79,138,255,0.35)",
-                    color: "var(--accent)",
-                  }}
                 >
                   {optimizing ? "Optimizing..." : "⚡ Quick Optimize"}
                 </button>
+                <div className="optimize-subtitle">Fast database lookup for cheapest prices</div>
+
                 <button className="checkout-btn">Proceed to Checkout →</button>
               </div>
             )}
@@ -924,7 +951,7 @@ function App() {
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
                     <div className="chat-header-title">
-                      AI Shopping Assistant
+                      AI Assistant
                     </div>
                     <span className="rag-badge">RAG</span>
                   </div>
@@ -991,7 +1018,7 @@ function App() {
         <footer className="footer">
           <div className="footer-name">Harsh Rana 🚀</div>
           <div className="footer-sub">
-            AI SMART SHOPPING PLATFORM · RAG · LLM · MULTI-AGENT
+            AI Smart Shopping Platform · Powered by RAG, LLM & Multi-Agent AI
           </div>
         </footer>
       </div>

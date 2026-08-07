@@ -40,7 +40,7 @@ Based on this data, should an Indian consumer buy this product now or wait?`;
     const response = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
       {
-        model:       "llama3-8b-8192",
+        model: "llama-3.1-8b-instant",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user",   content: userPrompt   },
@@ -69,7 +69,7 @@ Based on this data, should an Indian consumer buy this product now or wait?`;
     res.json({
       verdict:      "Check Manually",
       summary:      "AI advisor is temporarily unavailable. Please compare prices manually.",
-      best_platform: prices?.[0]?.platform || "Unknown",
+      best_platform: "Unknown",
       risk_level:   "Medium",
       key_insight:  "Unable to generate insight at this time.",
       buy_reason:   "Please try again in a moment.",

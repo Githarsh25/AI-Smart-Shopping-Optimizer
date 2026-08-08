@@ -24,8 +24,12 @@ if (!process.env.VERCEL) {
   require("./cron/priceChecker");
 }
 
+const allowedOrigins = process.env.ALLOWED_ORIGIN
+  ? process.env.ALLOWED_ORIGIN.split(",").map(o => o.trim())
+  : "*";
+
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || "http://localhost:5173"
+  origin: allowedOrigins
 }));
 app.use(express.json());
 

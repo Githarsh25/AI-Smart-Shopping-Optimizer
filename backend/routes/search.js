@@ -3,13 +3,13 @@ const router = express.Router();
 const axios = require("axios");
 const pool = require("../db");
 
-if (!process.env.SERP_API_KEY) {
-  console.error("FATAL: SERP_API_KEY is not set in .env");
-  process.exit(1);
-}
-
 router.get("/:query", async (req, res, next) => {
   try {
+    if (!process.env.SERP_API_KEY) {
+      console.error("SERP_API_KEY is not set in environment variables");
+      return res.status(500).json({ message: "SERP_API_KEY is not configured on the backend." });
+    }
+
     const query = req.params.query;
 
     if (!query || query.trim().length === 0) {

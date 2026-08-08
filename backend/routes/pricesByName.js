@@ -30,7 +30,7 @@ router.get("/:name", async (req, res, next) => {
 
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "No products or prices found matching that name" });
+      return res.json([]);
     }
 
     res.json(result.rows);

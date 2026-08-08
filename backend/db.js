@@ -8,15 +8,9 @@ if (!process.env.DATABASE_URL) {
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
-});
-
-pool.connect((err, client, release) => {
-  if (err) {
-    console.error("❌ PostgreSQL connection failed:", err.message);
-  } else {
-    console.log("✅ Connected to Neon PostgreSQL");
-    release();
-  }
+  max: 5,                       // Max connections per serverless instance
+  idleTimeoutMillis: 10000,     // Close idle connections after 10s
+  connectionTimeoutMillis: 10000,// Fail quickly if connection hangs
 });
 
 pool.on("error", (err) => {

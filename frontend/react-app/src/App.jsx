@@ -360,7 +360,8 @@ function App() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showCart]);
 
-  const addToCart = (product) => setCart((prev) => [...prev, product]);
+  const addToCart = (product) =>
+    setCart((prev) => [...prev, { ...product, searchQuery: query }]);
   const removeFromCart = (index) => {
     const updated = [...cart];
     updated.splice(index, 1);
@@ -501,7 +502,11 @@ function App() {
       setOptimizeError(null);
       setOptimizeNotFound([]);
       const res = await axios.post(`${API}/ai/cart-agent`, {
-        products: cart.map((item) => item.title),
+        products: cart.map((item) => ({
+          title: item.title,
+          query: item.searchQuery || "",
+          price: item.price,
+        })),
       });
       setOptimizedCart(res.data.optimized_cart);
       setOptimizedTotal(res.data.total_cost);
@@ -541,9 +546,11 @@ function App() {
       setAgentSavings(null);
       setAgentPipeline(null);
       const res = await axios.post(`${API}/cart/optimize`, {
-        products: cart.map((item) =>
-          item.title.toLowerCase().split(" ").slice(0, 3).join(" "),
-        ),
+        products: cart.map((item) => ({
+          title: item.title,
+          query: item.searchQuery || "",
+          price: item.price,
+        })),
       });
       if (res.data.cart && res.data.cart.length > 0) {
         setOptimizedCart(res.data.cart);

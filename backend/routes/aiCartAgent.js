@@ -36,8 +36,33 @@ router.post("/", async (req, res, next) => {
       return res.status(400).json({ message: "products must be a non-empty array" });
     }
 
-    const productNames = products.map(p => p.toLowerCase().split(" ").slice(0, 3).join(" "));
-    const conditions = productNames.map((_, i) => `LOWER(pr.name) LIKE $${i + 1}`).join(" OR ");
+    const searchTerms = [];
+    const productTitles = [];
+
+    products.forEach((p) => {
+      if (typeof p === "string") {
+        productTitles.push(p);
+        searchTerms.push(p.toLowerCase());
+        p.toLowerCase().split(/\s+/).forEach((w) => {
+          if (w.length > 3) searchTerms.push(w);
+        });
+      } else if (p && typeof p === "object") {
+        productTitles.push(p.title || p.query || "Product");
+        if (p.query) searchTerms.push(p.query.toLowerCase());
+        if (p.title) {
+          searchTerms.push(p.title.toLowerCase());
+          p.title.toLowerCase().split(/\s+/).forEach((w) => {
+            if (w.length > 3) searchTerms.push(w);
+          });
+        }
+      }
+    });
+
+    const uniqueTerms = [...new Set(searchTerms.filter(Boolean))].slice(0, 20);
+
+    const conditions = uniqueTerms
+      .map((_, i) => `LOWER(pr.name) LIKE $${i + 1} OR $${i + 1} LIKE '%' || LOWER(pr.name) || '%'`)
+      .join(" OR ");
 
     const priceData = await pool.query(`
       SELECT
@@ -54,7 +79,7 @@ router.post("/", async (req, res, next) => {
       JOIN platforms pl ON pp.platform_id = pl.id
       WHERE ${conditions}
       ORDER BY pr.name, pp.price ASC
-    `, productNames.map(k => `%${k}%`));
+    `, uniqueTerms.map((k) => `%${k}%`));
 
     if (priceData.rows.length === 0) {
       return res.status(404).json({
@@ -93,12 +118,14 @@ Calculate total_savings as the difference between buying everything at highest p
 Price data:
 ${JSON.stringify(priceData.rows, null, 2)}
 
-Products in cart: ${products.join(", ")}`,
+Products in cart: ${productTitles.join(", ")}`,
       },
     ]);
 
-    const cleaned1  = agent1Output.replace(/```json|```/g, "").trim();
-    const analysis  = JSON.parse(cleaned1);
+    let cleaned1 = agent1Output.replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
+    const match1 = cleaned1.match(/\{[\s\S]*\}/);
+    if (match1) cleaned1 = match1[0];
+    const analysis = JSON.parse(cleaned1);
 
     console.log("🤖 Agent 2 (Shopping Strategist) starting...");
 
@@ -121,7 +148,7 @@ ${JSON.stringify(analysis, null, 2)}
 
 Write a friendly shopping strategy for the user based on this analysis.`,
       },
-    ], 200);
+    ], 500);
 
     res.json({
       optimized_cart:    analysis.analysis,

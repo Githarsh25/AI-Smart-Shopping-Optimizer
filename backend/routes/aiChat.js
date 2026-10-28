@@ -113,10 +113,10 @@ Keep answers brief and helpful.`;
     const response = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
       {
-        model: "llama-3.1-8b-instant",
+        model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
         messages,
         temperature: 0.4,
-        max_tokens:  350,
+        max_tokens:  1000,
       },
       {
         headers: {

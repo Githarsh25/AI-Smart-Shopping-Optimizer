@@ -40,13 +40,14 @@ Based on this data, should an Indian consumer buy this product now or wait?`;
     const response = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
       {
-        model: "llama-3.1-8b-instant",
+        model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user",   content: userPrompt   },
         ],
         temperature: 0.2,    
-        max_tokens:  400,
+        max_tokens:  1500,
+        response_format: { type: "json_object" },
       },
       {
         headers: {
@@ -59,7 +60,9 @@ Based on this data, should an Indian consumer buy this product now or wait?`;
     const raw = response.data.choices[0].message.content.trim();
 
 
-    const cleaned = raw.replace(/```json|```/g, "").trim();
+    let cleaned = raw.replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (jsonMatch) cleaned = jsonMatch[0];
     const advice  = JSON.parse(cleaned);
 
     res.json(advice);

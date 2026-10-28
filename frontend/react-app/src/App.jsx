@@ -733,7 +733,7 @@ function App() {
                 )}
                 {advisorLoading && (
                   <div className="advisor-loading">
-                    <span className="pulse"></span> Analyzing with Llama 3…
+                    <span className="pulse"></span> Analyzing with Groq AI…
                   </div>
                 )}
               </div>
@@ -744,7 +744,7 @@ function App() {
                     💡 {advisor.key_insight}
                   </div>
                   <div className="advisor-meta">
-                    LLM: Llama 3 (Groq) · Prompt Engineering · Structured Output
+                    LLM: Groq AI · Prompt Engineering · Structured Output
                     · Best platform: {advisor.best_platform}
                   </div>
                 </>

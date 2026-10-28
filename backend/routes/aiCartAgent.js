@@ -3,12 +3,12 @@ const router  = express.Router();
 const axios   = require("axios");
 const pool    = require("../db");
 
-async function callAgent(agentName, messages, maxTokens = 500) {
+async function callAgent(agentName, messages, maxTokens = 1200) {
   try {
     const response = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
       {
-        model: "llama-3.1-8b-instant",
+        model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
         messages,
         temperature: 0.2,
         max_tokens:  maxTokens,
